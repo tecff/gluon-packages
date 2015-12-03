@@ -10,6 +10,3 @@ Usage
 * copy your renamed site-files to $gluondir/site/extra/
 * The default site conf has still to remain as site.conf in the site-dir
 
-<br>
-Das ganze sieht dann so aus: <br>
-![](http://labor19.net/Hendrik/preview1.png)
