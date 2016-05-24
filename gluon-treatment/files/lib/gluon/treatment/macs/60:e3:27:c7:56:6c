@@ -1,6 +1,0 @@
-#!/bin/sh
-# add ssh key of nodes admin
-echo "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAlLnSkZ/wzkyXaAmYgOqmZZoaasJuEt6GuPQ0ilXaxGZ32BaogReES2UW3HDGfp3IZdfTCt7uZb7TA31JtCPGgg/XHtHpWNSfSfKCiMPaEv6HOPtSVghDjs9Uq3VJqw6S57llsVLItEJHk10GOihGVO+iredmxPTvpxDkdiqJZko2nm3VwheeyqmzIhgs78tXS+C4D3qpuMVLlsd5bAqdpp/X8x4w7wpCnyqx740n5iIOx4ioJdpA6kuSsTmOvkv845qXt7CwMJXsTt+aHXKKNkRKOdwm+daWH3uirlRkIuHCG6Sx2f4T0rjLihYPSi0q2M5ZrNIbUZjuXKyZ8OYNHQ== stefank-20160107-Freifunk" >> /etc/dropbear/authorized_keys
-# force branch switch to stable
-uci set autoupdater.settings.branch=stable
-uci commit autoupdater
