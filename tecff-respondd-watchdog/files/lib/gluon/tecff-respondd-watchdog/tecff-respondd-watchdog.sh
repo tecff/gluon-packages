@@ -11,21 +11,19 @@ if [ "$?" == "0" ]; then
 fi
 
 # don't run this script if another instance is still running
-# this uses two separate lock files to make the script exit instead of waiting for a lock
+LOCKFILE="/var/lock/tecff-respondd-watchdog.lock"
 cleanup() {
-	echo "Cleaning stuff up..."
-	rm /var/lock/tecff-respondd-watchdog.lock-long
+	echo "cleanup, removing lockfile: $LOCKFILE"
+	rm -f "$LOCKFILE"
 	exit
 }
-lock /var/lock/tecff-respondd-watchdog.lock-short
-if [ -e /var/lock/tecff-respondd-watchdog.lock-long ]; then
-	lock -u /var/lock/tecff-respondd-watchdog.lock-short
-	echo "another instance of this script is already running, aborting."
+if ( set -o noclobber; echo "$$" > "$LOCKFILE" ) 2> /dev/null; then
+	trap cleanup INT TERM
+else
+	echo "failed to acquire lockfile: $LOCKFILE"
+	echo "another instance of this script might still be running, aborting."
 	exit
 fi
-touch /var/lock/tecff-respondd-watchdog.lock-long
-lock -u /var/lock/tecff-respondd-watchdog.lock-short
-trap cleanup INT TERM
 
 RESTARTINFOFILE="/tmp/respondd-last-watchdog-start-marker-file"
 
