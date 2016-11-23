@@ -128,13 +128,23 @@ done
 GWCONNECTION=0
 GATEWAY=$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[ ]' '{print $2}')
 if [ $GATEWAY ]; then
-	batctl ping -c 3 $GATEWAY >/dev/null 2>&1
+	batctl ping -c 2 $GATEWAY >/dev/null 2>&1
 	if [ "$?" == "0" ]; then
-		GWCONNECTION=1
-		echo "can ping default gateway $GATEWAY ."
-		if [ ! -f "$GWFILE" ]; then
-			# create file so we can check later if there was a reachable gateway before
-			touch $GWFILE
+		echo "can ping default gateway $GATEWAY , trying ping6 on NTP servers..."
+		for i in $(uci get system.ntp.server); do
+			ping6 -c 1 $i >/dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				echo "can ping at least one of the NTP servers: $i"
+				GWCONNECTION=1
+				if [ ! -f "$GWFILE" ]; then
+					# create file so we can check later if there was a reachable gateway before
+					touch $GWFILE
+				fi
+				break
+			fi
+		done
+		if [ "$GWCONNECTION" -eq 0 ]; then
+			echo "can't ping any of the NTP servers."
 		fi
 	else
 		echo "can't ping default gateway $GATEWAY ."
