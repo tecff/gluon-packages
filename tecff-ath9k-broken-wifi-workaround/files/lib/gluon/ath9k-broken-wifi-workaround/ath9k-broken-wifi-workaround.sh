@@ -163,6 +163,7 @@ if [ ! -f "$RESTARTFILE" ] && [ "$WIFIRESTART" -eq 1 ]; then
 	echo "wifi restart possible on next script run."
 elif [ "$WIFIRESTART" -eq 1 ]; then
 	echo "restarting wifi."
+	[ "$GWCONNECTION" -eq 0 ] && rm -f $GWFILE
 	rm -f $MESHFILE
 	rm -f $CLIENTFILE
 	rm -f $PRIVCLIENTFILE
