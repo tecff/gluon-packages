@@ -126,7 +126,7 @@ done
 
 # check if the node can reach the default gateway
 GWCONNECTION=0
-GATEWAY=$(batctl gwl | grep "^=>" | awk -F'[ ]' '{print $2}')
+GATEWAY=$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[ ]' '{print $2}')
 if [ $GATEWAY ]; then
 	batctl ping -c 3 $GATEWAY >/dev/null 2>&1
 	if [ "$?" == "0" ]; then
