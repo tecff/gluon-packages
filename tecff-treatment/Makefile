@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=gluon-treatment
+PKG_NAME:=tecff-treatment
 PKG_VERSION:=1
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/gluon-treatment
+define Package/tecff-treatment
   SECTION:=gluon
   CATEGORY:=Gluon
   TITLE:=treatment
@@ -24,9 +24,9 @@ endef
 define Build/Compile
 endef
 
-define Package/gluon-treatment/install
+define Package/tecff-treatment/install
         $(CP) ./files/* $(1)/
 endef
 
-$(eval $(call BuildPackage,gluon-treatment))
+$(eval $(call BuildPackage,tecff-treatment))
 

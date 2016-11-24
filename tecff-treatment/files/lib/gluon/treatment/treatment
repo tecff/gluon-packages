@@ -12,7 +12,7 @@ for mac in $(ls /lib/gluon/treatment/macs); do
 done
 
 # try opkg remove 
-opkg remove gluon-treatment
+opkg remove tecff-treatment
 # delete cronjob manually (in case opkg didn't work)
 rm /usr/lib/micron.d/treatment
 # delete script and mac treatments
