@@ -1,14 +1,14 @@
 tecff-autoupdater-wifi-fallback
 ==============================
 
-If a node has no connection to the mesh, neither via wlan-mesh nor via
-mesh-vpn, it ist not possible to update this node via `autoupdater`. Therefor
-the *wifi-fallback* was developed. It checks hourly whether the node is part of
-a fully operative mesh or not. Else the node connects to a visible "Freifunknetz"
-and tries downloads an update as wlan-client via executing `autoupdater -f`.
+If a node has no connection to the mesh, neither via wifi nor via
+vpn, it ist not possible to update this node via `autoupdater`.
+The *wifi-fallback* provides a solution. It checks hourly whether the node is part of
+a fully operative mesh. Else the node connects to a visible "Freifunknetz"
+in client mode and tries to download an update by executing `autoupdater -f`.
 
-Actually this needs `iw connect` patched into `iw`. See the patch at ffho
-[site repository](https://git.c3pb.de/freifunk-pb/site-ffho) or in tecff's gluon.
+This package needs `iw connect` patched into `iw`. See the patch at ffho
+[site repository](https://git.c3pb.de/freifunk-pb/site-ffho) or in tecff's gluon fork.
 
 /etc/config/autoupdater-wifi-fallback
 -------------------------------------
