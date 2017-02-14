@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# this script switches the node's autoupdater branch setting to stable,
+#  if the currently installed image is tagged like a stable image.
+#
+
+if [ "$(uci get autoupdater.settings.branch)" != stable ]; then
+	if ! egrep -q ".*-.*-.*" /lib/gluon/release; then
+		uci set autoupdater.settings.branch='stable'
+	fi
+fi
