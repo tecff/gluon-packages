@@ -13,16 +13,17 @@ checkupdater() {
 }
 
 GWFILE="/tmp/gateway-ip-connection-active"
+NWRESTARTFILE="/tmp/network-restart-pending"
 REBOOTFILE="/tmp/device-reboot-pending"
 
-# check if the node can reach the default gateway
-GWCONNECTION=0
+# check if the node can reach an NTP server
+IPV6CONNECTION=0
 echo "trying ping6 on NTP servers..."
 for i in $(uci get system.ntp.server); do
 	ping6 -c 1 $i >/dev/null 2>&1
 	if [ $? -eq 0 ]; then
 		echo "can ping at least one of the NTP servers: $i"
-		GWCONNECTION=1
+		IPV6CONNECTION=1
 		if [ ! -f "$GWFILE" ]; then
 			# create file so we can check later if there was a reachable gateway before
 			touch $GWFILE
@@ -30,30 +31,32 @@ for i in $(uci get system.ntp.server); do
 		break
 	fi
 done
-if [ "$GWCONNECTION" -eq 0 ]; then
-	echo "can't ping any of the NTP servers."
-fi
 
-DEVICEREBOOT=0
-if [ "$GWCONNECTION" -eq 0 ]; then
+ACTIONREQUIRED=0
+if [ "$IPV6CONNECTION" -eq 0 ]; then
+	echo "can't ping any of the NTP servers."
 	if [ -f "$GWFILE" ]; then
 		# no pingable gateway but there was one before
-		DEVICEREBOOT=1
+		ACTIONREQUIRED=1
 	fi
 fi
 
 checkupdater
 
-if [ ! -f "$REBOOTFILE" ] && [ "$DEVICEREBOOT" -eq 1 ]; then
-	# delaying device reboot until the next script run
+if [ ! -f "$REBOOTFILE" ] && [ ! -f "$NWRESTARTFILE" ] && [ "$ACTIONREQUIRED" -eq 1 ]; then
+	# delaying network restart until the next script run
+	touch $NWRESTARTFILE
+	echo "network restart possible on next script run."
+elif [ ! -f "$REBOOTFILE" ] && [ "$ACTIONREQUIRED" -eq 1 ]; then
+	echo "restarting device network."
+	# create marker file to reboot if problem persists until next script run
 	touch $REBOOTFILE
-	echo "device reboot possible on next script run."
-elif [ "$DEVICEREBOOT" -eq 1 ]; then
-	echo "rebooting device."
-	[ "$GWCONNECTION" -eq 0 ] && rm -f $GWFILE
-	rm -f $REBOOTFILE
+	/etc/init.d/network restart
+elif [ "$ACTIONREQUIRED" -eq 1 ]; then
+	echo "rebooting device, network restart didn't help."
 	reboot
 else
 	echo "everything seems to be ok."
 	rm -f $REBOOTFILE
+	rm -f $NWRESTARTFILE
 fi
