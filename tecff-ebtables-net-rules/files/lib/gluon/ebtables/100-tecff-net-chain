@@ -1,1 +1,0 @@
-chain('TECFF_NET_ONLY', 'DROP') 
