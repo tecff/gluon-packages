@@ -1,6 +1,6 @@
 #!/usr/bin/lua
 local fs = require('nixio.fs')
-local uci = require('luci.model.uci').cursor()
+local uci = require('simple-uci').cursor()
 local site = require 'gluon.site_config'
 local util = require 'luci.util'
 local ut = require('autoupdater-wifi-fallback.util')

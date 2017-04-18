@@ -1,5 +1,5 @@
 #!/usr/bin/lua
-local uci = require('luci.model.uci').cursor()
+local uci = require('simple-uci').cursor()
 local iwinfo = require "iwinfo"
 
 function get_available_wifi_networks()
