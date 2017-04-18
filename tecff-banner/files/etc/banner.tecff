@@ -3,9 +3,9 @@
  |   _|  -__|  __|   _||   _|
  |____|_____|____|__|  |__| 
  ----------------------------------------------------- 
- tecff Freifunk Firmware - based on gluon/OpenWRT
+ tecff Freifunk Firmware - based on gluon/LEDE
  -----------------------------------------------------
- Web    : http://freifunk-altdorf.de/
+ Web    : https://www.freifunk-altdorf.de/
  Code   : https://github.com/tecff/
  Kontakt: altdorf@freifunk.net     (Mailingliste)
           altdorf-dev@freifunk.net (Entwickler-Mailingliste)
