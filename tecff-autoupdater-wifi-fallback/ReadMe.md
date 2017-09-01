@@ -8,7 +8,7 @@ a fully operative mesh. Else the node connects to a visible "Freifunknetz"
 in client mode and tries to download an update by executing `autoupdater -f`.
 
 This package needs `iw connect` patched into `iw`. See the patch at ffho
-[site repository](https://git.c3pb.de/freifunk-pb/site-ffho) or in tecff's gluon fork.
+[site repository](https://git.ffho.net/freifunkhochstift/ffho-site) or in tecff's gluon fork.
 
 /etc/config/autoupdater-wifi-fallback
 -------------------------------------
