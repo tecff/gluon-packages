@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# don't do anything while an autoupdater process is running
+pgrep -f autoupdater >/dev/null
+if [ "$?" == "0" ]; then
+	echo "autoupdater is running, aborting."
+	exit 2
+fi
+
 # At first some Definitions:
 
 ONLINE_SSID=$(uci -q get wireless.client_radio0.ssid)
