@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# check if node has wifi
+if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
+	echo "node has no wifi, aborting."
+	exit
+fi
+
 # don't do anything while an autoupdater process is running
 pgrep -f autoupdater >/dev/null
 if [ "$?" == "0" ]; then
