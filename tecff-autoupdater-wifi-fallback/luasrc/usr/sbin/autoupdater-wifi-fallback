@@ -1,4 +1,5 @@
 #!/usr/bin/lua
+local nixio = require 'nixio'
 local fs = require 'nixio.fs'
 local uci = require('simple-uci').cursor()
 local site = require 'gluon.site'
@@ -103,6 +104,18 @@ local function revert_to_standard_mode()
   io.popen('logger -s -t autoupdater-wifi-fallback -p local0.info "going back to standard mode"')
   os.execute('/etc/init.d/network restart')
   os.execute('sleep 30')
+end
+
+-- PID file to ensure the script isn't running parallel
+local lockfile = '/var/lock/tecff-autoupdater-wifi-fallback.lock'
+local lockfd = nixio.open(lockfile, 'w', 'rw-------')
+
+if not lockfd:lock('tlock') then
+  io.stderr:write(string.format(
+    "Unable to lock file %s. Make sure there is no other instance of the script running.\n",
+    lockfile
+  ))
+  os.exit(1)
 end
 
 parse_args()
