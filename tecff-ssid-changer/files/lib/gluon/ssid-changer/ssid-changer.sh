@@ -10,7 +10,22 @@ fi
 pgrep -f autoupdater >/dev/null
 if [ "$?" == "0" ]; then
 	echo "autoupdater is running, aborting."
-	exit 2
+	exit
+fi
+
+# don't run this script if another instance is still running
+LOCKFILE="/var/lock/tecff-ssid-changer.lock"
+cleanup() {
+	echo "cleanup, removing lockfile: $LOCKFILE"
+	rm -f "$LOCKFILE"
+	exit
+}
+if ( set -o noclobber; echo "$$" > "$LOCKFILE" ) 2> /dev/null; then
+	trap cleanup INT TERM
+else
+	echo "failed to acquire lockfile: $LOCKFILE"
+	echo "another instance of this script might still be running, aborting."
+	exit
 fi
 
 # At first some Definitions:
@@ -98,3 +113,5 @@ if [ $HUP_NEEDED == 1 ]; then
 	HUP_NEEDED=0
 	echo "HUP!"
 fi
+
+cleanup
