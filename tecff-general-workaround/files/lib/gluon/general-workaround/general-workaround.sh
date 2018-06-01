@@ -31,10 +31,23 @@ for i in $(uci get system.ntp.server); do
 		break
 	fi
 done
-
-ACTIONREQUIRED=0
 if [ "$IPV6CONNECTION" -eq 0 ]; then
 	echo "can't ping any of the NTP servers."
+fi
+
+# check if the node suffers from a unregister_netdevice bug
+UNREGISTERBUG=0
+echo "checking for unregister_netdevice bug..."
+dmesg | tail | grep -q "unregister_netdevice: waiting for"
+if [ "$?" == 0 ]; then
+	echo "seeing log messages which indicate a serious bug."
+	UNREGISTERBUG=1
+fi
+
+# determine if the script has to act
+ACTIONREQUIRED=0
+if [ "$IPV6CONNECTION" -eq 0 ] || [ "$UNREGISTERBUG" -eq 1 ]; then
+	echo "detected a reason to act upon."
 	if [ -f "$GWFILE" ]; then
 		# no pingable gateway but there was one before
 		ACTIONREQUIRED=1
