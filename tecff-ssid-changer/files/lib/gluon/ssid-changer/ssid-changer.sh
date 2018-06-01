@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SCRIPTNAME="${PWD##*/}"
+SCRIPTNAME="ssid-changer"
 
 # check if node has wifi
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
