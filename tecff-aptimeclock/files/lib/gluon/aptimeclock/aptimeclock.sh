@@ -4,7 +4,7 @@
 
 sleep 25 # this is a hack
 
-SCRIPTNAME="${PWD##*/}"
+SCRIPTNAME="aptimeclock"
 
 ClientRadio0off="/tmp/${SCRIPTNAME}-ClientRadio0.off"
 ClientRadio0on="/tmp/${SCRIPTNAME}-ClientRadio0.on"

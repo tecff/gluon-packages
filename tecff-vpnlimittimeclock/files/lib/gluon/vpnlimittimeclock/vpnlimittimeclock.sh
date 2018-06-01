@@ -4,7 +4,7 @@
 
 sleep 37 # this is a hack
 
-SCRIPTNAME="${PWD##*/}"
+SCRIPTNAME="vpnlimittimeclock"
 
 vpnlimitoff="/tmp/${SCRIPTNAME}.off"
 vpnlimiton="/tmp/${SCRIPTNAME}.on"
