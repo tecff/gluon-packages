@@ -3,6 +3,8 @@
 # this script tries to recover nodes that have no gateway connectivity via IP
 #
 
+SCRIPTNAME="${PWD##*/}"
+
 # don't do anything while an autoupdater process is running
 checkupdater() {
 	pgrep autoupdater >/dev/null

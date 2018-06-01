@@ -1,5 +1,7 @@
 #!/bin/sh
 
+SCRIPTNAME="${PWD##*/}"
+
 # check if node has wifi
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
 	echo "node has no wifi, aborting."
@@ -14,7 +16,7 @@ if [ "$?" == "0" ]; then
 fi
 
 # don't run this script if another instance is still running
-LOCKFILE="/var/lock/tecff-ssid-changer.lock"
+LOCKFILE="/var/lock/${SCRIPTNAME}.lock"
 cleanup() {
 	echo "cleanup, removing lockfile: $LOCKFILE"
 	rm -f "$LOCKFILE"
@@ -70,7 +72,7 @@ then
 		CURRENT_SSID=`grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2`
 		if [ $CURRENT_SSID == $OFFLINE_SSID ]
 		then
-			logger -s -t "gluon-offline-ssid" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, change to $ONLINE_SSID" #Write Info to Syslog
+			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, change to $ONLINE_SSID" #Write Info to Syslog
 			sed -i s/^ssid=$CURRENT_SSID/ssid=$ONLINE_SSID/ $HOSTAPD
 			HUP_NEEDED=1 # HUP here would be to early for dualband devices
 		else
@@ -93,7 +95,7 @@ then
 		CURRENT_SSID=`grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2`
 		if [ $CURRENT_SSID == $ONLINE_SSID ]
 		then
-			logger -s -t "gluon-offline-ssid" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, change to $OFFLINE_SSID" #Write Info to Syslog
+			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, change to $OFFLINE_SSID" #Write Info to Syslog
 			sed -i s/^ssid=$ONLINE_SSID/ssid=$OFFLINE_SSID/ $HOSTAPD
 			HUP_NEEDED=1 # HUP here would be to early for dualband devices
 		else
