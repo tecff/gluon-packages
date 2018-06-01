@@ -10,6 +10,8 @@
 # 				d) a gateway is reachable
 # 		is true, this script fails to recover broken radios
 
+SCRIPTNAME="${PWD##*/}"
+
 # check if node has wifi
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
 	echo "node has no wifi, aborting."
@@ -24,7 +26,7 @@ if [ "$?" == "0" ]; then
 fi
 
 # don't run this script if another instance is still running
-LOCKFILE="/var/lock/tecff-ath9k-broken-wifi-workaround.lock"
+LOCKFILE="/var/lock/${SCRIPTNAME}.lock"
 cleanup() {
 	echo "cleanup, removing lockfile: $LOCKFILE"
 	rm -f "$LOCKFILE"

@@ -4,8 +4,10 @@
 
 sleep 37 # this is a hack
 
-vpnlimitoff="/tmp/vpnlimit.off"
-vpnlimiton="/tmp/vpnlimit.on"
+SCRIPTNAME="${PWD##*/}"
+
+vpnlimitoff="/tmp/${SCRIPTNAME}.off"
+vpnlimiton="/tmp/${SCRIPTNAME}.on"
 
 CurrentTime="$(date +%k%M)"
 
@@ -19,7 +21,7 @@ if [ $? -eq 0 ]; then
       if ( ( ( [ $vpnlimiton -le $vpnlimitoff ] ) && ( ( [ $CurrentTime -ge $vpnlimiton ] ) && ( [ $CurrentTime -le $vpnlimitoff ] ) ) ) || ( ( [ $vpnlimiton -ge $vpnlimitoff ] ) && ( ( [ $CurrentTime -ge $vpnlimiton ] ) || ( [ $CurrentTime -le $vpnlimitoff ] ) ) ) ); then
         if [ $(uci get mesh_vpn.bandwidth_limit.enabled) -eq 0 ]; then
           uci set mesh_vpn.bandwidth_limit.enabled=1
-          logger -s -t "tecff-vpnlimittimeclock" -p 5 "VPN-bandwidthlimit aktiviert"
+          logger -s -t "$SCRIPTNAME" -p 5 "VPN-bandwidthlimit aktiviert"
           /etc/init.d/fastd restart
           rm $vpnlimitoff &>/dev/null
           echo 1> $vpnlimiton
@@ -27,14 +29,14 @@ if [ $? -eq 0 ]; then
       else
         if [ $(uci get mesh_vpn.bandwidth_limit.enabled) -eq 1 ]; then
           uci set mesh_vpn.bandwidth_limit.enabled=0
-          logger -s -t "tecff-vpnlimittimeclock" -p 5 "VPN-bandwidthlimit deaktiviert"
+          logger -s -t "$SCRIPTNAME" -p 5 "VPN-bandwidthlimit deaktiviert"
           /etc/init.d/fastd restart
           rm $vpnlimiton &>/dev/null
           echo 1> $vpnlimitoff
         fi
       fi
     else
-      logger -s -t "tecff-vpnlimittimeclock" -p 5 "mesh_vpn.bandwidth_limit.clock_on or mesh_vpn.bandwidth_limit.clock_off not set correctly to hhmm format."
+      logger -s -t "$SCRIPTNAME" -p 5 "mesh_vpn.bandwidth_limit.clock_on or mesh_vpn.bandwidth_limit.clock_off not set correctly to hhmm format."
     fi
   fi
 fi
