@@ -3,7 +3,7 @@
 # this script tries to recover nodes that have no gateway connectivity via IP
 #
 
-SCRIPTNAME="${PWD##*/}"
+SCRIPTNAME="general-workaround"
 
 # don't do anything while an autoupdater process is running
 checkupdater() {
