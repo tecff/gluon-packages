@@ -4,8 +4,10 @@
 
 sleep 25 # this is a hack
 
-ClientRadio0off="/tmp/ClientRadio0.off"
-ClientRadio0on="/tmp/ClientRadio0.on"
+SCRIPTNAME="${PWD##*/}"
+
+ClientRadio0off="/tmp/${SCRIPTNAME}-ClientRadio0.off"
+ClientRadio0on="/tmp/${SCRIPTNAME}-ClientRadio0.on"
 
 CurrentTime="$(date +%k%M)"
 
@@ -19,7 +21,7 @@ if [ $? -eq 0 ]; then
       if ( ( ( [ $apclock0on -le $apclock0off ] ) && ( ( [ $CurrentTime -le $apclock0on ] ) || ( [ $CurrentTime -ge $apclock0off ] ) ) ) || ( ( [ $apclock0on -ge $apclock0off ] ) && ( ( [ $CurrentTime -le $apclock0on ] ) && ( [ $CurrentTime -ge $apclock0off ] ) ) ) ); then
         if [ $(uci get wireless.client_radio0.disabled) -eq 0 ]; then
           uci set wireless.client_radio0.disabled=1
-          logger -s -t "tecff-aptimeclock" -p 5 "APradio0 deaktiviert"
+          logger -s -t "$SCRIPTNAME" -p 5 "APradio0 deaktiviert"
           /sbin/wifi
           rm $ClientRadio0on &>/dev/null
           echo 1> $ClientRadio0off
@@ -27,14 +29,14 @@ if [ $? -eq 0 ]; then
       else
         if [ $(uci get wireless.client_radio0.disabled) -eq 1 ]; then
           uci set wireless.client_radio0.disabled=0
-          logger -s -t "tecff-aptimeclock" -p 5 "APradio0 aktiviert"
+          logger -s -t "$SCRIPTNAME" -p 5 "APradio0 aktiviert"
           /sbin/wifi
           rm $ClientRadio0off &>/dev/null
           echo 1> $ClientRadio0on
         fi
       fi
     else
-      logger -s -t "tecff-aptimeclock" -p 5 "wireless.radio0.client_apclock0on or apclock0off not set correctly to hhmm format."
+      logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio0.client_apclock0on or apclock0off not set correctly to hhmm format."
     fi
   fi
 fi
@@ -49,7 +51,7 @@ if [ $? -eq 0 ]; then
       if ( ( ( [ $apclock1on -le $apclock1off ] ) && ( ( [ $CurrentTime -le $apclock1on ] ) || ( [ $CurrentTime -ge $apclock1off ] ) ) ) || ( ( [ $apclock1on -ge $apclock1off ] ) && ( ( [ $CurrentTime -le $apclock1on ] ) && ( [ $CurrentTime -ge $apclock1off ] ) ) ) ); then
         if [ $(uci get wireless.client_radio1.disabled) -eq 0 ]; then
           uci set wireless.client_radio1.disabled=1
-          logger -s -t "tecff-aptimeclock" -p 5 "APradio1 deaktiviert"
+          logger -s -t "$SCRIPTNAME" -p 5 "APradio1 deaktiviert"
           /sbin/wifi
           rm $ClientRadio0on &>/dev/null
           echo 1> $ClientRadio1off
@@ -57,14 +59,14 @@ if [ $? -eq 0 ]; then
       else
         if [ $(uci get wireless.client_radio1.disabled) -eq 1 ]; then
           uci set wireless.client_radio1.disabled=0
-          logger -s -t "tecff-aptimeclock" -p 5 "APradio1 aktiviert"
+          logger -s -t "$SCRIPTNAME" -p 5 "APradio1 aktiviert"
           /sbin/wifi
           rm $ClientRadio0off &>/dev/null
           echo 1> $ClientRadio1on
         fi
       fi
     else
-      logger -s -t "tecff-aptimeclock" -p 5 "wireless.radio1.client_apclock1on or .apclock1off not set correctly to hhmm format."
+      logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio1.client_apclock1on or .apclock1off not set correctly to hhmm format."
     fi
   fi
 fi
