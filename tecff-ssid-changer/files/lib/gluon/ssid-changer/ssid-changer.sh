@@ -4,29 +4,29 @@ SCRIPTNAME="${PWD##*/}"
 
 # check if node has wifi
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
-	echo "node has no wifi, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "node has no wifi, aborting."
 	exit
 fi
 
 # don't do anything while an autoupdater process is running
 pgrep -f autoupdater >/dev/null
 if [ "$?" == "0" ]; then
-	echo "autoupdater is running, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "autoupdater is running, aborting."
 	exit
 fi
 
 # don't run this script if another instance is still running
 LOCKFILE="/var/lock/${SCRIPTNAME}.lock"
 cleanup() {
-	echo "cleanup, removing lockfile: $LOCKFILE"
+	logger -s -t "$SCRIPTNAME" -p 5 "cleanup, removing lockfile: $LOCKFILE"
 	rm -f "$LOCKFILE"
 	exit
 }
 if ( set -o noclobber; echo "$$" > "$LOCKFILE" ) 2> /dev/null; then
 	trap cleanup INT TERM
 else
-	echo "failed to acquire lockfile: $LOCKFILE"
-	echo "another instance of this script might still be running, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "failed to acquire lockfile: $LOCKFILE"
+	logger -s -t "$SCRIPTNAME" -p 5 "another instance of this script might still be running, aborting."
 	exit
 fi
 
@@ -60,12 +60,12 @@ fi
 
 if [ $GATEWAY_TQ -gt $UPPER_LIMIT ];
 then
-	echo "Gateway TQ is $GATEWAY_TQ node is online"
+	logger -s -t "$SCRIPTNAME" -p 5 "Gateway TQ is $GATEWAY_TQ node is online"
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do #Check status for all physical devices
 		CURRENT_SSID=`grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2`
 		if [ $CURRENT_SSID == $ONLINE_SSID ]
 		then
-			echo "SSID $CURRENT_SSID is correct, noting to do"
+			logger -s -t "$SCRIPTNAME" -p 5 "SSID $CURRENT_SSID is correct, nothing to do"
 			HUP_NEEDED=0
 			break
 		fi
@@ -76,19 +76,19 @@ then
 			sed -i s/^ssid=$CURRENT_SSID/ssid=$ONLINE_SSID/ $HOSTAPD
 			HUP_NEEDED=1 # HUP here would be to early for dualband devices
 		else
-			echo "There is something wrong, did not find SSID $ONLINE_SSID or $OFFLINE_SSID"
+			logger -s -t "$SCRIPTNAME" -p 5 "There is something wrong, did not find SSID $ONLINE_SSID or $OFFLINE_SSID"
 		fi
 	done
 fi
 
 if [ $GATEWAY_TQ -lt $LOWER_LIMIT ];
 then
-	echo "Gateway TQ is $GATEWAY_TQ node is considered offline"
+	logger -s -t "$SCRIPTNAME" -p 5 "Gateway TQ is $GATEWAY_TQ node is considered offline"
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do #Check status for all physical devices
 		CURRENT_SSID=`grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2`
 		if [ $CURRENT_SSID == $OFFLINE_SSID ]
 		then
-			echo "SSID $CURRENT_SSID is correct, noting to do"
+			logger -s -t "$SCRIPTNAME" -p 5 "SSID $CURRENT_SSID is correct, nothing to do"
 			HUP_NEEDED=0
 			break
 		fi
@@ -99,21 +99,21 @@ then
 			sed -i s/^ssid=$ONLINE_SSID/ssid=$OFFLINE_SSID/ $HOSTAPD
 			HUP_NEEDED=1 # HUP here would be to early for dualband devices
 		else
-			echo "There is something wrong, did not find SSID $ONLINE_SSID or $OFFLINE_SSID"
+			logger -s -t "$SCRIPTNAME" -p 5 "There is something wrong, did not find SSID $ONLINE_SSID or $OFFLINE_SSID"
 		fi
 	done
 fi
 
 if [ $GATEWAY_TQ -ge $LOWER_LIMIT -a $GATEWAY_TQ -le $UPPER_LIMIT ]; #This is just get a clean run if we are in-between the grace periode
 then
-	echo "TQ is $GATEWAY_TQ, do nothing"
+	logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, do nothing"
 	HUP_NEEDED=0
 fi
 
 if [ $HUP_NEEDED == 1 ]; then
 	killall -HUP hostapd # Send HUP to all hostapd um die neue SSID zu laden
 	HUP_NEEDED=0
-	echo "HUP!"
+	logger -s -t "$SCRIPTNAME" -p 5 "HUP!"
 fi
 
 cleanup

@@ -14,29 +14,29 @@ SCRIPTNAME="${PWD##*/}"
 
 # check if node has wifi
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
-	echo "node has no wifi, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "node has no wifi, aborting."
 	exit
 fi
 
 # don't do anything while an autoupdater process is running
 pgrep autoupdater >/dev/null
 if [ "$?" == "0" ]; then
-	echo "autoupdater is running, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "autoupdater is running, aborting."
 	exit
 fi
 
 # don't run this script if another instance is still running
 LOCKFILE="/var/lock/${SCRIPTNAME}.lock"
 cleanup() {
-	echo "cleanup, removing lockfile: $LOCKFILE"
+	logger -s -t "$SCRIPTNAME" -p 5 "cleanup, removing lockfile: $LOCKFILE"
 	rm -f "$LOCKFILE"
 	exit
 }
 if ( set -o noclobber; echo "$$" > "$LOCKFILE" ) 2> /dev/null; then
 	trap cleanup INT TERM
 else
-	echo "failed to acquire lockfile: $LOCKFILE"
-	echo "another instance of this script might still be running, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "failed to acquire lockfile: $LOCKFILE"
+	logger -s -t "$SCRIPTNAME" -p 5 "another instance of this script might still be running, aborting."
 	exit
 fi
 
@@ -68,7 +68,7 @@ done
 
 # check if the ath9k interface list is empty
 if [ -z "$ATH9K_IFS" ] || [ -z "$ATH9K_DEVS" ]; then
-	echo "node doesn't use the ath9k wifi driver, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "node doesn't use the ath9k wifi driver, aborting."
 	cleanup
 	exit
 fi
@@ -86,7 +86,7 @@ for wifidev in $ATH9K_IFS; do
 	if expr "$wifidev" : "\(ibss\|mesh\)[0-9]" >/dev/null; then
 		if [ "$(batctl o | egrep "$wifidev" | wc -l)" -gt 0 ]; then
 			WIFIMESHCONNECTIONS=1
-			echo "found wifi mesh partners."
+			logger -s -t "$SCRIPTNAME" -p 5	"found wifi mesh partners."
 			if [ ! -f "$MESHFILE" ]; then
 				# create file so we can check later if there was a wifi mesh connection before
 				touch $MESHFILE
@@ -102,7 +102,7 @@ WIFIFFCONNECTIONCOUNT="$(batctl tl | grep W | wc -l)"
 if [ "$WIFIFFCONNECTIONCOUNT" -gt 0 ]; then
 	# note: this check doesn't know which radio the clients are on
 	WIFIFFCONNECTIONS=1
-	echo "found batman local clients."
+	logger -s -t "$SCRIPTNAME" -p 5 "found batman local clients."
 	if [ ! -f "$CLIENTFILE" ]; then
 		# create file so we can check later if there were batman local clients before
 		touch $CLIENTFILE
@@ -116,7 +116,7 @@ for wifidev in $ATH9K_IFS; do
 		iw dev $wifidev station dump 2>/dev/null | grep -q Station
 		if [ "$?" == "0" ]; then
 			WIFIPRIVCONNECTIONS=1
-			echo "found private wifi clients."
+			logger -s -t "$SCRIPTNAME" -p 5 "found private wifi clients."
 			if [ ! -f "$PRIVCLIENTFILE" ]; then
 				# create file so we can check later if there were private wifi clients before
 				touch $PRIVCLIENTFILE
@@ -132,11 +132,11 @@ GATEWAY=$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[ ]' '{print $2}')
 if [ $GATEWAY ]; then
 	batctl ping -c 2 $GATEWAY >/dev/null 2>&1
 	if [ "$?" == "0" ]; then
-		echo "can ping default gateway $GATEWAY , trying ping6 on NTP servers..."
+		logger -s -t "$SCRIPTNAME" -p 5 "can ping default gateway $GATEWAY , trying ping6 on NTP servers..."
 		for i in $(uci get system.ntp.server); do
 			ping6 -c 1 $i >/dev/null 2>&1
 			if [ $? -eq 0 ]; then
-				echo "can ping at least one of the NTP servers: $i"
+				logger -s -t "$SCRIPTNAME" -p 5	"can ping at least one of the NTP servers: $i"
 				GWCONNECTION=1
 				if [ ! -f "$GWFILE" ]; then
 					# create file so we can check later if there was a reachable gateway before
@@ -146,10 +146,10 @@ if [ $GATEWAY ]; then
 			fi
 		done
 		if [ "$GWCONNECTION" -eq 0 ]; then
-			echo "can't ping any of the NTP servers."
+			logger -s -t "$SCRIPTNAME" -p 5 "can't ping any of the NTP servers."
 		fi
 	else
-		echo "can't ping default gateway $GATEWAY ."
+		logger -s -t "$SCRIPTNAME" -p 5 "can't ping default gateway $GATEWAY ."
 	fi
 else
 	echo "no default gateway defined."
@@ -172,9 +172,9 @@ fi
 if [ ! -f "$RESTARTFILE" ] && [ "$WIFIRESTART" -eq 1 ]; then
 	# delaying wifi restart until the next script run
 	touch $RESTARTFILE
-	echo "wifi restart possible on next script run."
+	logger -s -t "$SCRIPTNAME" -p 5 "wifi restart possible on next script run."
 elif [ "$WIFIRESTART" -eq 1 ]; then
-	echo "restarting wifi."
+	logger -s -t "$SCRIPTNAME" -p 5 "restarting wifi."
 	[ "$GWCONNECTION" -eq 0 ] && rm -f $GWFILE
 	rm -f $MESHFILE
 	rm -f $CLIENTFILE
@@ -189,7 +189,7 @@ elif [ "$WIFIRESTART" -eq 1 ]; then
 		wifi up $wifidev
 	done
 else
-	echo "everything seems to be ok."
+	logger -s -t "$SCRIPTNAME" -p 5 "everything seems to be ok."
 	rm -f $RESTARTFILE
 fi
 
