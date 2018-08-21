@@ -1,7 +1,7 @@
 #!/usr/bin/lua
 
 local uci = require('simple-uci').cursor()
-local fs = require 'nixio.fs'
+local util = require 'gluon.util'
 
 local enabled
 if uci:get('autoupdater-wifi-fallback', 'settings') then
@@ -35,7 +35,7 @@ uci:save('autoupdater-wifi-fallback')
 uci:save('network')
 uci:save('wireless')
 
-local minute = tonumber(fs.readfile('/usr/lib/micron.d/autoupdater'):match('^([0-9][0-9]?)%s'))
+local minute = tonumber(util.readfile('/usr/lib/micron.d/autoupdater'):match('^([0-9][0-9]?)%s'))
 minute = (minute + 10) % 60
 
 local f = io.open('/usr/lib/micron.d/autoupdater-wifi-fallback', 'w')

@@ -1,15 +1,36 @@
 #!/usr/bin/lua
-local nixio = require 'nixio'
-local fs = require 'nixio.fs'
 local uci = require('simple-uci').cursor()
 local site = require 'gluon.site'
 local autil = require 'autoupdater-wifi-fallback.util'
 local util = require 'gluon.util'
+local bit = require 'bit'
+local fcntl = require 'posix.fcntl'
+local unistd = require 'posix.unistd'
 
 local configname = 'autoupdater-wifi-fallback'
+local lockfilename = configname .. '-lockfile'
 local force = false
 local min_uptime_secs = 3600
 local branch_name = uci:get('autoupdater', 'settings', 'branch')
+
+local lockfd, err = fcntl.open(lockfilename, bit.bor(fcntl.O_WRONLY, fcntl.O_CREAT, fcntl.O_CLOEXEC), 384) -- mode 0600
+if not lockfd then
+        io.stderr:write(err, '\n')
+        os.exit(1)
+end
+
+local ok, err = fcntl.fcntl(lockfd, fcntl.F_SETLK, {
+        l_start = 0,
+        l_len = 0,
+        l_type = fcntl.F_WRLCK,
+        l_whence = unistd.SEEK_SET,
+})
+if not ok then
+        io.stderr:write(err, '\n')
+        os.exit(1)
+end
+
+io.stdout:write('Lock acquired.', '\n')
 
 local function parse_args()
 local i = 1
@@ -40,7 +61,7 @@ local function preflight_check()
   if not uci:get_bool('autoupdater', 'settings', 'enabled') then
     return false
   end
-  if tonumber(fs.readfile('/proc/uptime'):match('^([^ ]+) ')) < min_uptime_secs then
+  if tonumber(util.readfile('/proc/uptime'):match('^([^ ]+) ')) < min_uptime_secs then
     return false
   end
 
@@ -104,18 +125,6 @@ local function revert_to_standard_mode()
   io.popen('logger -s -t autoupdater-wifi-fallback -p local0.info "going back to standard mode"')
   os.execute('/etc/init.d/network restart')
   os.execute('sleep 30')
-end
-
--- PID file to ensure the script isn't running parallel
-local lockfile = '/var/lock/tecff-autoupdater-wifi-fallback.lock'
-local lockfd = nixio.open(lockfile, 'w', 'rw-------')
-
-if not lockfd:lock('tlock') then
-  io.stderr:write(string.format(
-    "Unable to lock file %s. Make sure there is no other instance of the script running.\n",
-    lockfile
-  ))
-  os.exit(1)
 end
 
 parse_args()
