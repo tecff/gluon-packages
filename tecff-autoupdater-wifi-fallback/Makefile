@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tecff-autoupdater-wifi-fallback
-PKG_VERSION:=3
+PKG_VERSION:=4
 PKG_RELEASE:=$(GLUON_VERSION).$(GLUON_SITE_CODE)-$(GLUON_RELEASE).$(GLUON_CONFIG_VERSION)
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
@@ -10,11 +10,10 @@ PKG_BUILD_DEPENDS := respondd
 include $(TOPDIR)/../package/gluon.mk
 
 define Package/tecff-autoupdater-wifi-fallback
-  SECTION:=ffho
-  CATEGORY:=FFHO
+  SECTION:=tecff
+  CATEGORY:=Customization
   TITLE:=Implements switching to fallback mode if we are cut off from the mesh
   DEPENDS:=+gluon-autoupdater +libiwinfo-lua +iw
-  MAINTAINER:=Freifunk Hochstift <kontakt@hochstift.freifunk.net>
 endef
 
 define Build/Prepare
