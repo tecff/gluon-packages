@@ -23,7 +23,7 @@ if [ "$?" != "0" ]; then
 	exit
 fi
 
-ONLINE_SSID=$(uci -q get wireless.client_radio0.ssid)
+ONLINE_SSID="$(uci -q get wireless.client_radio0.ssid)"
 : ${ONLINE_SSID:=Freifunk}   # if ONLINE_SSID is NULL
 OFFLINE_PREFIX='FF_OFFLINE_' # use something short to leave space for the nodename
 UPPER_LIMIT='30' # above this limit the online SSID will be used
@@ -31,17 +31,17 @@ LOWER_LIMIT='15' # below this limit the offline SSID will be used
 # in-between these two values the SSID will never be changed to prevent it from toggling every minute.
 
 # generate an Offline SSID with the first and last part of the node's name to be able to recognise which node is down
-NODENAME=`uname -n`
+NODENAME="$(uname -n)"
 if [ ${#NODENAME} -gt $((30 - ${#OFFLINE_PREFIX})) ] ; then
-	HALF=$(( (28 - ${#OFFLINE_PREFIX} ) / 2 )) # calculate the length of the first part of the node identifier in the offline-ssid
-	SKIP=$(( ${#NODENAME} - $HALF )) # jump to this character for the last part of the name
-	OFFLINE_SSID=$OFFLINE_PREFIX${NODENAME:0:$HALF}...${NODENAME:$SKIP:${#NODENAME}} # use the first and last part of the nodename for nodes with long names
+	HALF="$(( (28 - ${#OFFLINE_PREFIX} ) / 2 ))" # calculate the length of the first part of the node identifier in the offline-ssid
+	SKIP="$(( ${#NODENAME} - $HALF ))" # jump to this character for the last part of the name
+	OFFLINE_SSID="$OFFLINE_PREFIX${NODENAME:0:$HALF}...${NODENAME:$SKIP:${#NODENAME}}" # use the first and last part of the nodename for nodes with long names
 else
 	OFFLINE_SSID="$OFFLINE_PREFIX$NODENAME" # it's possible to use the full name in the offline ssid
 fi
 
 # check for an active gateway and get its connection quality (TQ)
-GATEWAY_TQ=`batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[()]' '{print $2}'| tr -d " "`
+GATEWAY_TQ="$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[()]' '{print $2}'| tr -d " ")"
 
 # set TQ to zero if there's no gateway
 [ -n "$GATEWAY_TQ" ] || GATEWAY_TQ=0
@@ -50,17 +50,17 @@ if [ $GATEWAY_TQ -gt $UPPER_LIMIT ];
 then
 	logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is $GATEWAY_TQ, node is online"
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical wifi devices
-		CURRENT_SSID=`grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2`
+		CURRENT_SSID="$(grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
 		if [ $CURRENT_SSID == $ONLINE_SSID ]
 		then
 			HUP_NEEDED=0
 			break
 		fi
-		CURRENT_SSID=`grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2`
+		CURRENT_SSID="$(grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
 		if [ $CURRENT_SSID == $OFFLINE_SSID ]
 		then
 			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, changing to $ONLINE_SSID"
-			sed -i s/^ssid=$CURRENT_SSID/ssid=$ONLINE_SSID/ $HOSTAPD
+			sed -i "s/^ssid=$CURRENT_SSID/ssid=$ONLINE_SSID/" $HOSTAPD
 			HUP_NEEDED=1 # immediate HUP would be too early for dualband devices, delaying it
 		else
 			logger -s -t "$SCRIPTNAME" -p 5 "there's something wrong, didn't find SSID $ONLINE_SSID or $OFFLINE_SSID in $HOSTAPD"
@@ -72,17 +72,17 @@ if [ $GATEWAY_TQ -lt $LOWER_LIMIT ];
 then
 	logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is $GATEWAY_TQ, node is considered offline"
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical wifi devices
-		CURRENT_SSID=`grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2`
+		CURRENT_SSID="$(grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
 		if [ $CURRENT_SSID == $OFFLINE_SSID ]
 		then
 			HUP_NEEDED=0
 			break
 		fi
-		CURRENT_SSID=`grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2`
+		CURRENT_SSID="$(grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
 		if [ $CURRENT_SSID == $ONLINE_SSID ]
 		then
 			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, changing to $OFFLINE_SSID"
-			sed -i s/^ssid=$ONLINE_SSID/ssid=$OFFLINE_SSID/ $HOSTAPD
+			sed -i "s/^ssid=$ONLINE_SSID/ssid=$OFFLINE_SSID/" $HOSTAPD
 			HUP_NEEDED=1 # immediate HUP would be too early for dualband devices, delaying it
 		else
 			logger -s -t "$SCRIPTNAME" -p 5 "there's something wrong, didn't find SSID $ONLINE_SSID or $OFFLINE_SSID in $HOSTAPD"
