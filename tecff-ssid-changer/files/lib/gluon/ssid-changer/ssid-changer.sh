@@ -23,88 +23,81 @@ if [ "$?" != "0" ]; then
 	exit
 fi
 
-# At first some Definitions:
-
 ONLINE_SSID=$(uci -q get wireless.client_radio0.ssid)
-: ${ONLINE_SSID:=FREIFUNK}   # if for whatever reason ONLINE_SSID is NULL
-OFFLINE_PREFIX='FF_OFFLINE_' # Use something short to leave space for the nodename
+: ${ONLINE_SSID:=Freifunk}   # if ONLINE_SSID is NULL
+OFFLINE_PREFIX='FF_OFFLINE_' # use something short to leave space for the nodename
+UPPER_LIMIT='30' # above this limit the online SSID will be used
+LOWER_LIMIT='15' # below this limit the offline SSID will be used
+# in-between these two values the SSID will never be changed to prevent it from toggling every minute.
 
-UPPER_LIMIT='30' #Above this limit the online SSID will be used
-LOWER_LIMIT='15' #Below this limit the offline SSID will be used
-# In-between these two values the SSID will never be changed to preven it from toggeling every Minute.
-
-# Generate an Offline SSID with the first and last Part of the nodename to allow owner to recognise wich node is down
+# generate an Offline SSID with the first and last part of the node's name to be able to recognise which node is down
 NODENAME=`uname -n`
-if [ ${#NODENAME} -gt $((30 - ${#OFFLINE_PREFIX})) ] ; then #32 would be possible as well
-	HALF=$(( (28 - ${#OFFLINE_PREFIX} ) / 2 )) #calculate the length of the first part of the node identifier in the offline-ssid
-	SKIP=$(( ${#NODENAME} - $HALF )) #jump to this charakter for the last part of the name
-	OFFLINE_SSID=$OFFLINE_PREFIX${NODENAME:0:$HALF}...${NODENAME:$SKIP:${#NODENAME}} # use the first and last part of the nodename for nodes with long name
+if [ ${#NODENAME} -gt $((30 - ${#OFFLINE_PREFIX})) ] ; then
+	HALF=$(( (28 - ${#OFFLINE_PREFIX} ) / 2 )) # calculate the length of the first part of the node identifier in the offline-ssid
+	SKIP=$(( ${#NODENAME} - $HALF )) # jump to this character for the last part of the name
+	OFFLINE_SSID=$OFFLINE_PREFIX${NODENAME:0:$HALF}...${NODENAME:$SKIP:${#NODENAME}} # use the first and last part of the nodename for nodes with long names
 else
-	OFFLINE_SSID="$OFFLINE_PREFIX$NODENAME" #greate we are able to use the full nodename in the offline ssid
+	OFFLINE_SSID="$OFFLINE_PREFIX$NODENAME" # it's possible to use the full name in the offline ssid
 fi
 
-#Is there an active Gateway?
-GATEWAY_TQ=`batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[()]' '{print $2}'| tr -d " "` #Grep the Connection Quality of the Gateway which is currently used
+# check for an active gateway and get its connection quality (TQ)
+GATEWAY_TQ=`batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[()]' '{print $2}'| tr -d " "`
 
-if [ ! $GATEWAY_TQ ]; #If there is no gateway there will be errors in the following if clauses
-then
-	GATEWAY_TQ=0 #Just an easy way to get an valid value if there is no gatway
-fi
+# set TQ to zero if there's no gateway
+[ -n "$GATEWAY_TQ" ] || GATEWAY_TQ=0
 
 if [ $GATEWAY_TQ -gt $UPPER_LIMIT ];
 then
-	logger -s -t "$SCRIPTNAME" -p 5 "Gateway TQ is $GATEWAY_TQ node is online"
-	for HOSTAPD in $(ls /var/run/hostapd-phy*); do #Check status for all physical devices
+	logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is $GATEWAY_TQ, node is online"
+	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical wifi devices
 		CURRENT_SSID=`grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2`
 		if [ $CURRENT_SSID == $ONLINE_SSID ]
 		then
-			logger -s -t "$SCRIPTNAME" -p 5 "SSID $CURRENT_SSID is correct, nothing to do"
 			HUP_NEEDED=0
 			break
 		fi
 		CURRENT_SSID=`grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2`
 		if [ $CURRENT_SSID == $OFFLINE_SSID ]
 		then
-			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, change to $ONLINE_SSID" #Write Info to Syslog
+			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, changing to $ONLINE_SSID"
 			sed -i s/^ssid=$CURRENT_SSID/ssid=$ONLINE_SSID/ $HOSTAPD
-			HUP_NEEDED=1 # HUP here would be to early for dualband devices
+			HUP_NEEDED=1 # immediate HUP would be too early for dualband devices, delaying it
 		else
-			logger -s -t "$SCRIPTNAME" -p 5 "There is something wrong, did not find SSID $ONLINE_SSID or $OFFLINE_SSID"
+			logger -s -t "$SCRIPTNAME" -p 5 "there's something wrong, didn't find SSID $ONLINE_SSID or $OFFLINE_SSID in $HOSTAPD"
 		fi
 	done
 fi
 
 if [ $GATEWAY_TQ -lt $LOWER_LIMIT ];
 then
-	logger -s -t "$SCRIPTNAME" -p 5 "Gateway TQ is $GATEWAY_TQ node is considered offline"
-	for HOSTAPD in $(ls /var/run/hostapd-phy*); do #Check status for all physical devices
+	logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is $GATEWAY_TQ, node is considered offline"
+	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical wifi devices
 		CURRENT_SSID=`grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2`
 		if [ $CURRENT_SSID == $OFFLINE_SSID ]
 		then
-			logger -s -t "$SCRIPTNAME" -p 5 "SSID $CURRENT_SSID is correct, nothing to do"
 			HUP_NEEDED=0
 			break
 		fi
 		CURRENT_SSID=`grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2`
 		if [ $CURRENT_SSID == $ONLINE_SSID ]
 		then
-			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, change to $OFFLINE_SSID" #Write Info to Syslog
+			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, changing to $OFFLINE_SSID"
 			sed -i s/^ssid=$ONLINE_SSID/ssid=$OFFLINE_SSID/ $HOSTAPD
-			HUP_NEEDED=1 # HUP here would be to early for dualband devices
+			HUP_NEEDED=1 # immediate HUP would be too early for dualband devices, delaying it
 		else
-			logger -s -t "$SCRIPTNAME" -p 5 "There is something wrong, did not find SSID $ONLINE_SSID or $OFFLINE_SSID"
+			logger -s -t "$SCRIPTNAME" -p 5 "there's something wrong, didn't find SSID $ONLINE_SSID or $OFFLINE_SSID in $HOSTAPD"
 		fi
 	done
 fi
 
-if [ $GATEWAY_TQ -ge $LOWER_LIMIT -a $GATEWAY_TQ -le $UPPER_LIMIT ]; #This is just get a clean run if we are in-between the grace periode
-then
-	logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, do nothing"
+# don't do anything if the TQ is between the two thresholds
+if [ $GATEWAY_TQ -ge $LOWER_LIMIT -a $GATEWAY_TQ -le $UPPER_LIMIT ]; then
+	logger -s -t "$SCRIPTNAME" -p 5 "TQ $GATEWAY_TQ is between the the lower&upper limits, doing nothing"
 	HUP_NEEDED=0
 fi
 
 if [ $HUP_NEEDED == 1 ]; then
-	killall -HUP hostapd # Send HUP to all hostapd um die neue SSID zu laden
+	killall -HUP hostapd # sending HUP signal to all hostapd processes in order to use the changed SSID
 	HUP_NEEDED=0
-	logger -s -t "$SCRIPTNAME" -p 5 "HUP!"
+	logger -s -t "$SCRIPTNAME" -p 5 "reloading hostapd with HUP"
 fi
