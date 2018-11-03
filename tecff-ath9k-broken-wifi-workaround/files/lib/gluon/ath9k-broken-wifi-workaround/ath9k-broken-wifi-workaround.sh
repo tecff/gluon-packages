@@ -26,17 +26,10 @@ if [ "$?" == "0" ]; then
 fi
 
 # don't run this script if another instance is still running
-LOCKFILE="/var/lock/${SCRIPTNAME}.lock"
-cleanup() {
-	logger -s -t "$SCRIPTNAME" -p 5 "cleanup, removing lockfile: $LOCKFILE"
-	rm -f "$LOCKFILE"
-	exit
-}
-if ( set -o noclobber; echo "$$" > "$LOCKFILE" ) 2> /dev/null; then
-	trap cleanup INT TERM
-else
-	logger -s -t "$SCRIPTNAME" -p 5 "failed to acquire lockfile: $LOCKFILE"
-	logger -s -t "$SCRIPTNAME" -p 5 "another instance of this script might still be running, aborting."
+exec 200<$0
+flock -n 200
+if [ "$?" != "0" ]; then
+	logger -s -t "$SCRIPTNAME" -p 5 "failed to acquire lock, another instance of this script might still be running, aborting."
 	exit
 fi
 
@@ -69,7 +62,6 @@ done
 # check if the ath9k interface list is empty
 if [ -z "$ATH9K_IFS" ] || [ -z "$ATH9K_DEVS" ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "node doesn't use the ath9k wifi driver, aborting."
-	cleanup
 	exit
 fi
 
@@ -192,5 +184,3 @@ else
 	logger -s -t "$SCRIPTNAME" -p 5 "everything seems to be ok."
 	rm -f $RESTARTFILE
 fi
-
-cleanup
