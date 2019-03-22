@@ -62,6 +62,10 @@ Gluon script to enable special treatment for single nodes based on their MACs.
 tecff-vpnlimittimeclock
 ------------------------
 
-Turn on/off the bandwitdth limit for vpn-usage by cron schedule
+Turn on/off the bandwidth limit for vpn-usage by cron schedule
 
 
+ffffm-button-bind
+-----------------
+
+allow to change the operation of the wifi button, turns it off by default

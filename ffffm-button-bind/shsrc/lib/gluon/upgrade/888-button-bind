@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cd /etc/rc.button
+mv rfkill rfkill.owrt
+ln -s rfkill.btnb rfkill
+
+touch /etc/config/button-bind
+
+exit 0
