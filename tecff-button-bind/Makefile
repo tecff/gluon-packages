@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=ffffm-button-bind
+PKG_NAME:=tecff-button-bind
 PKG_VERSION:=2
 PKG_RELEASE:=1
 
@@ -32,7 +32,7 @@ define Build/Compile
 	$(call ShellSrcDiet,shsrc,$(PKG_BUILD_DIR)/shdest/)
 endef
 
-define Package/ffffm-button-bind/install
+define Package/tecff-button-bind/install
 	$(Gluon/Build/Install)
 	$(CP) $(PKG_BUILD_DIR)/shdest/. $(1)/
 endef

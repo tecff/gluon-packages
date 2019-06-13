@@ -41,6 +41,12 @@ tecff-banner
 Banner file replacement
 
 
+tecff-button-bind
+-----------------
+
+allow to change the operation of the wifi button, turns it off by default
+
+
 tecff-general-workaround
 -------------------------
 
@@ -63,9 +69,3 @@ tecff-vpnlimittimeclock
 ------------------------
 
 Turn on/off the bandwidth limit for vpn-usage by cron schedule
-
-
-ffffm-button-bind
------------------
-
-allow to change the operation of the wifi button, turns it off by default
