@@ -1,9 +1,11 @@
 #!/bin/sh
 
-cd /etc/rc.button
-mv rfkill rfkill.owrt
-ln -s rfkill.btnb rfkill
+buttonrc="/etc/rc.button"
+if [ ! -L $buttonrc/rfkill ] || [ "$(readlink $buttonrc/rfkill)" != "rfkill.btnb" ]; then
+	mv $buttonrc/rfkill $buttonrc/rfkill.owrt
+	ln -s rfkill.btnb $buttonrc/rfkill
+fi
 
-touch /etc/config/button-bind
+[ -e /etc/config/button-bind ] || touch /etc/config/button-bind
 
 exit 0
