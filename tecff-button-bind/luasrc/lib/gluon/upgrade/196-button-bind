@@ -1,0 +1,26 @@
+#!/usr/bin/lua
+
+local sysconfig = require 'gluon.sysconfig'
+local uci = require('simple-uci').cursor()
+
+if uci:get('button-bind', 'wifi', 'function') then
+	-- don't override existing button-bind config
+	return
+else
+	-- create button-bind config section
+	uci:section('button-bind', 'button', 'wifi', {})
+	-- if there's no button bind config, disable button
+	local button_function = '1'
+	-- only run on upgrades
+	if sysconfig.gluon_version then
+		-- if any radio device is disabled,
+		-- don't change the button's default behaviour
+		uci:foreach('wireless', 'wifi-device', function(config)
+			if config.disabled == '1' then
+				button_function = '0'
+			end
+		end)
+	end
+	uci:set('button-bind', 'wifi', 'function', button_function)
+	uci:save('button-bind')
+end

@@ -7,6 +7,9 @@ Diese können über den Router-Konfigurationsmodus oder auf der Konsole per `uci
 
 Das Package passt die Funktionalität des Wifi-Tasters über das Skript `/etc/rc.button/rfkill` an.
 
+Bereits bestehende Einstellungen werden nicht überschrieben, zudem wird im Falle von schon vor der
+Installation deaktivierten Wifi-Interfaces die Original-Funktion des Tasters beibehalten.
+
 Über die Konsole wird die Funktionalität wie folgt eingestellt, wobei X für eine Funktionsziffer steht:
 `uci set button-bind.wifi.function=X; uci commit button-bind`
 
