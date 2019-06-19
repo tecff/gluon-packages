@@ -1,8 +1,8 @@
-  __               ___   ___ 
+  __               ___   ___
  |  |_.-----.----.'  _|.'  _|
  |   _|  -__|  __|   _||   _|
- |____|_____|____|__|  |__| 
- ----------------------------------------------------- 
+ |____|_____|____|__|  |__|
+ -----------------------------------------------------
  tecff Freifunk Firmware - based on Gluon/OpenWrt
  -----------------------------------------------------
  Web    : https://www.freifunk-altdorf.de/
@@ -10,4 +10,23 @@
  Kontakt: altdorf@freifunk.net         (Allgemeine Mailingliste)
           altdorf-dev@freifunk.net     (Technische Mailingliste)
           irc://chat.freenode.net/freifunk-altdorf (IRC-Channel)
-
+ -----------------------------------------------------
+ Gemeinschaftsrichtlinien:
+	1.	Das Pico-Peering-Agreement ist einzuhalten(http://www.picopeer.net/PPA-de.shtml).
+	2.	Meshing muss bereitgestellt werden, begründete Ausnahmen nur nach Absprache.
+	3.	Ein Knotenbetreiber muss erreichbar sein, d.h. E-Mail, Telefonnummer oder Link
+		zu Website mit diesen Angaben ist in der Knotenkonfiguration hinterlegt
+		und der Betreiber reagiert auf Anfragen.
+	4.	Standortkoordinaten müssen angegeben werden, begründete Ausnahmen nur nach Absprache.
+	5.	Fake-Standortdaten sind nicht erlaubt. Veränderungen des Knotenstandortes müssen
+		sofort in die Knotenkonfiguration übertragen werden.
+	6.	Die eingesetzte Firmware bzw. deren Konfiguration muss zum Knotenstandort
+		und somit zur regionalen Community passen.
+	7.	Firmware-Forks müssen ein einzigartiges Versionsschema nutzen.
+	8.	Eigene Firmware darf frei gestaltet werden, insofern keine anderen Regeln verletzt werden
+		und regelmäßige Aktualisierungen gewährleistet sind.
+	9.	Der Quellcode eigener Firmware muss offen liegen und ein Changelog vorhanden sein.
+		Maßnahmen in der offiziellen Firmware, die zur Netzhygiene oder zur Sicherheit beitragen
+		(Paketfilter/Sicherheitsupdates/Performanceoptimierung) müssen zeitnah von den eigenen
+		Firmwareversionen ein- oder nachgebaut werden.
+ -----------------------------------------------------
