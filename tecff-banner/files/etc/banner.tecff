@@ -1,8 +1,9 @@
-  __               ___   ___ 
+ -----------------------------------------------------
+  __               ___   ___
  |  |_.-----.----.'  _|.'  _|
  |   _|  -__|  __|   _||   _|
- |____|_____|____|__|  |__| 
- ----------------------------------------------------- 
+ |____|_____|____|__|  |__|
+ -----------------------------------------------------
  tecff Freifunk Firmware - based on Gluon/OpenWrt
  -----------------------------------------------------
  Web    : https://www.freifunk-altdorf.de/
@@ -10,4 +11,4 @@
  Kontakt: altdorf@freifunk.net         (Allgemeine Mailingliste)
           altdorf-dev@freifunk.net     (Technische Mailingliste)
           irc://chat.freenode.net/freifunk-altdorf (IRC-Channel)
-
+ -----------------------------------------------------
