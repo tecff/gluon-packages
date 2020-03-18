@@ -54,7 +54,7 @@ then
 		if [ $CURRENT_SSID == $ONLINE_SSID ]
 		then
 			HUP_NEEDED=0
-			break
+			continue
 		fi
 		CURRENT_SSID="$(grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
 		if [ $CURRENT_SSID == $OFFLINE_SSID ]
@@ -76,7 +76,7 @@ then
 		if [ $CURRENT_SSID == $OFFLINE_SSID ]
 		then
 			HUP_NEEDED=0
-			break
+			continue
 		fi
 		CURRENT_SSID="$(grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
 		if [ $CURRENT_SSID == $ONLINE_SSID ]
