@@ -36,29 +36,29 @@ fi
 # check if node uses a wlan driver and gather interfaces and devices
 for i in $(ls /sys/class/net/); do
 	# gather a list of interfaces
-	if [ -n "$ATH9K_IFS" ]; then
-		ATH9K_IFS="$ATH9K_IFS $i"
+	if [ -n "$WLAN_INTERFACES" ]; then
+		WLAN_INTERFACES="$WLAN_INTERFACES $i"
 	else
-		ATH9K_IFS="$i"
+		WLAN_INTERFACES="$i"
 	fi
 	# gather a list of devices
 	if expr "$i" : "\(client\|ibss\|mesh\)[0-9]" >/dev/null; then
-		ATH9K_UCI="$(uci show wireless | grep $i | cut -d"." -f1-2)"
-		ATH9K_DEV="$(uci get ${ATH9K_UCI}.device)"
-		if [ -n "$ATH9K_DEVS" ]; then
-			if ! expr "$ATH9K_DEVS" : ".*${ATH9K_DEV}.*" >/dev/null; then
-				ATH9K_DEVS="$ATH9K_DEVS $ATH9K_DEV"
+		WIRELESS_UCI="$(uci show wireless | grep $i | cut -d"." -f1-2)"
+		WLAN_DEVICE="$(uci get ${WIRELESS_UCI}.device)"
+		if [ -n "$WLAN_DEVICES" ]; then
+			if ! expr "$WLAN_DEVICES" : ".*${WLAN_DEVICE}.*" >/dev/null; then
+				WLAN_DEVICES="$WLAN_DEVICES $WLAN_DEVICE"
 			fi
 		else
-			ATH9K_DEVS="$ATH9K_DEV"
+			WLAN_DEVICES="$WLAN_DEVICE"
 		fi
-		ATH9K_UCI=
-		ATH9K_DEV=
+		WIRELESS_UCI=
+		WLAN_DEVICE=
 	fi
 done
 
 # check if the interface list is empty
-if [ -z "$ATH9K_IFS" ] || [ -z "$ATH9K_DEVS" ]; then
+if [ -z "$WLAN_INTERFACES" ] || [ -z "$WLAN_DEVICES" ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "node doesn't use a wlan driver, aborting."
 	exit
 fi
@@ -72,9 +72,9 @@ RESTARTINFOFILE="/tmp/wlan-last-restart-marker-file"
 
 # check if there are connections to other nodes via wireless meshing
 WLANMESHCONNECTIONS=0
-for wlandev in $ATH9K_IFS; do
-	if expr "$wlandev" : "\(ibss\|mesh\)[0-9]" >/dev/null; then
-		if [ "$(batctl o | egrep "$wlandev" | wc -l)" -gt 0 ]; then
+for wlan_interface in $WLAN_INTERFACES; do
+	if expr "$wlan_interface" : "\(ibss\|mesh\)[0-9]" >/dev/null; then
+		if [ "$(batctl o | egrep "$wlan_interface" | wc -l)" -gt 0 ]; then
 			WLANMESHCONNECTIONS=1
 			logger -s -t "$SCRIPTNAME" -p 5	"found wlan mesh partners."
 			if [ ! -f "$MESHFILE" ]; then
@@ -101,9 +101,9 @@ fi
 
 # check for clients on private wlan device
 WLANPRIVCONNECTIONS=0
-for wlandev in $ATH9K_IFS; do
-	if expr "$wlandev" : "wlan[0-9]" >/dev/null; then
-		iw dev $wlandev station dump 2>/dev/null | grep -q Station
+for wlan_interface in $WLAN_INTERFACES; do
+	if expr "$wlan_interface" : "wlan[0-9]" >/dev/null; then
+		iw dev $wlan_interface station dump 2>/dev/null | grep -q Station
 		if [ "$?" == "0" ]; then
 			WLANPRIVCONNECTIONS=1
 			logger -s -t "$SCRIPTNAME" -p 5 "found private wlan clients."
@@ -171,12 +171,12 @@ elif [ "$WLANRESTART" -eq 1 ]; then
 	rm -f $PRIVCLIENTFILE
 	rm -f $RESTARTFILE
 	touch $RESTARTINFOFILE
-	for wlandev in $ATH9K_DEVS; do
-		wifi down $wlandev
+	for wlan_device in $WLAN_DEVICES; do
+		wifi down $wlan_device
 	done
 	sleep 1
-	for wlandev in $ATH9K_DEVS; do
-		wifi up $wlandev
+	for wlan_device in $WLAN_DEVICES; do
+		wifi up $wlan_device
 	done
 else
 	logger -s -t "$SCRIPTNAME" -p 5 "everything seems to be ok."
