@@ -33,35 +33,33 @@ if [ "$?" != "0" ]; then
 	exit
 fi
 
-# check if node uses ath9k wifi driver
+# check if node uses a wifi driver and gather interfaces and devices
 for i in $(ls /sys/class/net/); do
-	if expr "$(readlink /sys/class/net/$i/device/driver)" : ".*/ath9k" >/dev/null; then
-		# gather a list of interfaces
-		if [ -n "$ATH9K_IFS" ]; then
-			ATH9K_IFS="$ATH9K_IFS $i"
-		else
-			ATH9K_IFS="$i"
-		fi
-		# gather a list of devices
-		if expr "$i" : "\(client\|ibss\|mesh\)[0-9]" >/dev/null; then
-			ATH9K_UCI="$(uci show wireless | grep $i | cut -d"." -f1-2)"
-			ATH9K_DEV="$(uci get ${ATH9K_UCI}.device)"
-			if [ -n "$ATH9K_DEVS" ]; then
-				if ! expr "$ATH9K_DEVS" : ".*${ATH9K_DEV}.*" >/dev/null; then
-					ATH9K_DEVS="$ATH9K_DEVS $ATH9K_DEV"
-				fi
-			else
-				ATH9K_DEVS="$ATH9K_DEV"
+	# gather a list of interfaces
+	if [ -n "$ATH9K_IFS" ]; then
+		ATH9K_IFS="$ATH9K_IFS $i"
+	else
+		ATH9K_IFS="$i"
+	fi
+	# gather a list of devices
+	if expr "$i" : "\(client\|ibss\|mesh\)[0-9]" >/dev/null; then
+		ATH9K_UCI="$(uci show wireless | grep $i | cut -d"." -f1-2)"
+		ATH9K_DEV="$(uci get ${ATH9K_UCI}.device)"
+		if [ -n "$ATH9K_DEVS" ]; then
+			if ! expr "$ATH9K_DEVS" : ".*${ATH9K_DEV}.*" >/dev/null; then
+				ATH9K_DEVS="$ATH9K_DEVS $ATH9K_DEV"
 			fi
-			ATH9K_UCI=
-			ATH9K_DEV=
+		else
+			ATH9K_DEVS="$ATH9K_DEV"
 		fi
+		ATH9K_UCI=
+		ATH9K_DEV=
 	fi
 done
 
-# check if the ath9k interface list is empty
+# check if the interface list is empty
 if [ -z "$ATH9K_IFS" ] || [ -z "$ATH9K_DEVS" ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "node doesn't use the ath9k wifi driver, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "node doesn't use a wifi driver, aborting."
 	exit
 fi
 
