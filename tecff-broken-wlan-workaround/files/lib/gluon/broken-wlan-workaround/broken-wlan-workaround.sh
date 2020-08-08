@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# this script tries to recover nodes that have problems with wifi connections
+# this script tries to recover nodes that have problems with wlan connections
 #
 # limitations:
-# - restarts every ath9k radio device, not only affected ones
+# - restarts every wlan radio device, not only affected ones
 # - if all of	a) there are multiple radios
 # 				b) at least one is not affected by the bug
 # 				c) there are still batman clients using a working radio
@@ -12,9 +12,9 @@
 
 SCRIPTNAME="broken-wlan-workaround"
 
-# check if node has wifi
+# check if node has wlan
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "node has no wifi, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "node has no wlan, aborting."
 	exit
 fi
 
@@ -33,7 +33,7 @@ if [ "$?" != "0" ]; then
 	exit
 fi
 
-# check if node uses a wifi driver and gather interfaces and devices
+# check if node uses a wlan driver and gather interfaces and devices
 for i in $(ls /sys/class/net/); do
 	# gather a list of interfaces
 	if [ -n "$ATH9K_IFS" ]; then
@@ -59,26 +59,26 @@ done
 
 # check if the interface list is empty
 if [ -z "$ATH9K_IFS" ] || [ -z "$ATH9K_DEVS" ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "node doesn't use a wifi driver, aborting."
+	logger -s -t "$SCRIPTNAME" -p 5 "node doesn't use a wlan driver, aborting."
 	exit
 fi
 
-MESHFILE="/tmp/wifi-mesh-connection-active"
-CLIENTFILE="/tmp/wifi-ff-client-connection-active"
-PRIVCLIENTFILE="/tmp/wifi-priv-client-connection-active"
+MESHFILE="/tmp/wlan-mesh-connection-active"
+CLIENTFILE="/tmp/wlan-ff-client-connection-active"
+PRIVCLIENTFILE="/tmp/wlan-priv-client-connection-active"
 GWFILE="/tmp/gateway-connection-active"
-RESTARTFILE="/tmp/wifi-restart-pending"
-RESTARTINFOFILE="/tmp/wifi-last-restart-marker-file"
+RESTARTFILE="/tmp/wlan-restart-pending"
+RESTARTINFOFILE="/tmp/wlan-last-restart-marker-file"
 
 # check if there are connections to other nodes via wireless meshing
-WIFIMESHCONNECTIONS=0
-for wifidev in $ATH9K_IFS; do
-	if expr "$wifidev" : "\(ibss\|mesh\)[0-9]" >/dev/null; then
-		if [ "$(batctl o | egrep "$wifidev" | wc -l)" -gt 0 ]; then
-			WIFIMESHCONNECTIONS=1
-			logger -s -t "$SCRIPTNAME" -p 5	"found wifi mesh partners."
+WLANMESHCONNECTIONS=0
+for wlandev in $ATH9K_IFS; do
+	if expr "$wlandev" : "\(ibss\|mesh\)[0-9]" >/dev/null; then
+		if [ "$(batctl o | egrep "$wlandev" | wc -l)" -gt 0 ]; then
+			WLANMESHCONNECTIONS=1
+			logger -s -t "$SCRIPTNAME" -p 5	"found wlan mesh partners."
 			if [ ! -f "$MESHFILE" ]; then
-				# create file so we can check later if there was a wifi mesh connection before
+				# create file so we can check later if there was a wlan mesh connection before
 				touch $MESHFILE
 			fi
 			break
@@ -86,12 +86,12 @@ for wifidev in $ATH9K_IFS; do
 	fi
 done
 
-# check if there are local wifi batman clients
-WIFIFFCONNECTIONS=0
-WIFIFFCONNECTIONCOUNT="$(batctl tl | grep W | wc -l)"
-if [ "$WIFIFFCONNECTIONCOUNT" -gt 0 ]; then
+# check if there are local wlan batman clients
+WLANFFCONNECTIONS=0
+WLANFFCONNECTIONCOUNT="$(batctl tl | grep W | wc -l)"
+if [ "$WLANFFCONNECTIONCOUNT" -gt 0 ]; then
 	# note: this check doesn't know which radio the clients are on
-	WIFIFFCONNECTIONS=1
+	WLANFFCONNECTIONS=1
 	logger -s -t "$SCRIPTNAME" -p 5 "found batman local clients."
 	if [ ! -f "$CLIENTFILE" ]; then
 		# create file so we can check later if there were batman local clients before
@@ -99,16 +99,16 @@ if [ "$WIFIFFCONNECTIONCOUNT" -gt 0 ]; then
 	fi
 fi
 
-# check for clients on private wifi device
-WIFIPRIVCONNECTIONS=0
-for wifidev in $ATH9K_IFS; do
-	if expr "$wifidev" : "wlan[0-9]" >/dev/null; then
-		iw dev $wifidev station dump 2>/dev/null | grep -q Station
+# check for clients on private wlan device
+WLANPRIVCONNECTIONS=0
+for wlandev in $ATH9K_IFS; do
+	if expr "$wlandev" : "wlan[0-9]" >/dev/null; then
+		iw dev $wlandev station dump 2>/dev/null | grep -q Station
 		if [ "$?" == "0" ]; then
-			WIFIPRIVCONNECTIONS=1
-			logger -s -t "$SCRIPTNAME" -p 5 "found private wifi clients."
+			WLANPRIVCONNECTIONS=1
+			logger -s -t "$SCRIPTNAME" -p 5 "found private wlan clients."
 			if [ ! -f "$PRIVCLIENTFILE" ]; then
-				# create file so we can check later if there were private wifi clients before
+				# create file so we can check later if there were private wlan clients before
 				touch $PRIVCLIENTFILE
 			fi
 			break
@@ -145,38 +145,38 @@ else
 	echo "no default gateway defined."
 fi
 
-WIFIRESTART=0
-if [ "$WIFIMESHCONNECTIONS" -eq 0 ] && [ "$WIFIPRIVCONNECTIONS" -eq 0 ] && [ "$WIFIFFCONNECTIONS" -eq 0 ]; then
+WLANRESTART=0
+if [ "$WLANMESHCONNECTIONS" -eq 0 ] && [ "$WLANPRIVCONNECTIONS" -eq 0 ] && [ "$WLANFFCONNECTIONS" -eq 0 ]; then
 	if [ -f "$MESHFILE" ] || [ -f "$CLIENTFILE" ] || [ -f "$PRIVCLIENTFILE" ]; then
-		# no wifi connections but there was one before
-		WIFIRESTART=1
+		# no wlan connections but there was one before
+		WLANRESTART=1
 	fi
 fi
 if [ "$GWCONNECTION" -eq 0 ]; then
 	if [ -f "$GWFILE" ]; then
 		# no pingable gateway but there was one before
-		WIFIRESTART=1
+		WLANRESTART=1
 	fi
 fi
 
-if [ ! -f "$RESTARTFILE" ] && [ "$WIFIRESTART" -eq 1 ]; then
-	# delaying wifi restart until the next script run
+if [ ! -f "$RESTARTFILE" ] && [ "$WLANRESTART" -eq 1 ]; then
+	# delaying wlan restart until the next script run
 	touch $RESTARTFILE
-	logger -s -t "$SCRIPTNAME" -p 5 "wifi restart possible on next script run."
-elif [ "$WIFIRESTART" -eq 1 ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "restarting wifi."
+	logger -s -t "$SCRIPTNAME" -p 5 "wlan restart possible on next script run."
+elif [ "$WLANRESTART" -eq 1 ]; then
+	logger -s -t "$SCRIPTNAME" -p 5 "restarting wlan."
 	[ "$GWCONNECTION" -eq 0 ] && rm -f $GWFILE
 	rm -f $MESHFILE
 	rm -f $CLIENTFILE
 	rm -f $PRIVCLIENTFILE
 	rm -f $RESTARTFILE
 	touch $RESTARTINFOFILE
-	for wifidev in $ATH9K_DEVS; do
-		wifi down $wifidev
+	for wlandev in $ATH9K_DEVS; do
+		wifi down $wlandev
 	done
 	sleep 1
-	for wifidev in $ATH9K_DEVS; do
-		wifi up $wifidev
+	for wlandev in $ATH9K_DEVS; do
+		wifi up $wlandev
 	done
 else
 	logger -s -t "$SCRIPTNAME" -p 5 "everything seems to be ok."
