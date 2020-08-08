@@ -17,10 +17,10 @@ tecff-archer-c25
 Disables 5 GHz Wifi Interfaces by default
 
 
-tecff-ath9k-broken-wifi-workaround
+tecff-broken-wlan-workaround
 -----------------------------------
 
-Tries to recover a misbehaving wifi interface
+Tries to recover a misbehaving wlan interface
 
 
 tecff-autoupdater-to-stable
