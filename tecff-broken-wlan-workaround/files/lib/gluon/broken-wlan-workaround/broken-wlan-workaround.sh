@@ -11,10 +11,11 @@
 # 		is true, this script fails to recover broken radios
 
 SCRIPTNAME="broken-wlan-workaround"
+DEBUG=false
 
 # check if node has wlan
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "node has no wlan, aborting."
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "node has no wlan, aborting."
 	exit
 fi
 
@@ -76,7 +77,7 @@ for wlan_interface in $WLAN_INTERFACES; do
 	if expr "$wlan_interface" : "\(ibss\|mesh\)[0-9]" >/dev/null; then
 		if [ "$(batctl o | egrep "$wlan_interface" | wc -l)" -gt 0 ]; then
 			WLANMESHCONNECTIONS=1
-			logger -s -t "$SCRIPTNAME" -p 5	"found wlan mesh partners."
+			$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found wlan mesh partners."
 			if [ ! -f "$MESHFILE" ]; then
 				# create file so we can check later if there was a wlan mesh connection before
 				touch $MESHFILE
@@ -92,7 +93,7 @@ WLANFFCONNECTIONCOUNT="$(batctl tl | grep W | wc -l)"
 if [ "$WLANFFCONNECTIONCOUNT" -gt 0 ]; then
 	# note: this check doesn't know which radio the clients are on
 	WLANFFCONNECTIONS=1
-	logger -s -t "$SCRIPTNAME" -p 5 "found batman local clients."
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found batman local clients."
 	if [ ! -f "$CLIENTFILE" ]; then
 		# create file so we can check later if there were batman local clients before
 		touch $CLIENTFILE
@@ -106,7 +107,7 @@ for wlan_interface in $WLAN_INTERFACES; do
 		iw dev $wlan_interface station dump 2>/dev/null | grep -q Station
 		if [ "$?" == "0" ]; then
 			WLANPRIVCONNECTIONS=1
-			logger -s -t "$SCRIPTNAME" -p 5 "found private wlan clients."
+			$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found private wlan clients."
 			if [ ! -f "$PRIVCLIENTFILE" ]; then
 				# create file so we can check later if there were private wlan clients before
 				touch $PRIVCLIENTFILE
@@ -122,11 +123,11 @@ GATEWAY=$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[ ]' '{print $2}')
 if [ $GATEWAY ]; then
 	batctl ping -c 2 $GATEWAY >/dev/null 2>&1
 	if [ "$?" == "0" ]; then
-		logger -s -t "$SCRIPTNAME" -p 5 "can ping default gateway $GATEWAY , trying ping6 on NTP servers..."
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can ping default gateway $GATEWAY , trying ping6 on NTP servers..."
 		for i in $(uci get system.ntp.server); do
 			ping6 -c 1 $i >/dev/null 2>&1
 			if [ $? -eq 0 ]; then
-				logger -s -t "$SCRIPTNAME" -p 5	"can ping at least one of the NTP servers: $i"
+				$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can ping at least one of the NTP servers: $i"
 				GWCONNECTION=1
 				if [ ! -f "$GWFILE" ]; then
 					# create file so we can check later if there was a reachable gateway before
@@ -178,7 +179,7 @@ elif [ "$WLANRESTART" -eq 1 ]; then
 	for wlan_device in $WLAN_DEVICES; do
 		wifi up $wlan_device
 	done
-else
-	logger -s -t "$SCRIPTNAME" -p 5 "everything seems to be ok."
+elif [ -f "$RESTARTFILE" ]; then
+	logger -s -t "$SCRIPTNAME" -p 5 "everything seems to be ok again."
 	rm -f $RESTARTFILE
 fi
