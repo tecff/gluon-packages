@@ -10,7 +10,7 @@
 # 				d) a gateway is reachable
 # 		is true, this script fails to recover broken radios
 
-SCRIPTNAME="ath9k-broken-wifi-workaround"
+SCRIPTNAME="broken-wlan-workaround"
 
 # check if node has wifi
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
