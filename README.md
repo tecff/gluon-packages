@@ -11,12 +11,6 @@ tecff-aptimeclock
 Turn on/off client AP by cron
 
 
-tecff-archer-c25
------------------
-
-Disables 5 GHz Wifi Interfaces by default
-
-
 tecff-broken-wlan-workaround
 -----------------------------------
 
