@@ -48,19 +48,16 @@ GATEWAY_TQ="$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[()]' '{print $2}'| t
 [ -n "$GATEWAY_TQ" ] || GATEWAY_TQ=0
 [ -n "$HUP_NEEDED" ] || HUP_NEEDED=false
 
-if [ "$GATEWAY_TQ" -gt "$UPPER_LIMIT" ];
-then
+if [ "$GATEWAY_TQ" -gt "$UPPER_LIMIT" ]; then
 	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is ${GATEWAY_TQ}, node is online"
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical WLAN devices
 		CURRENT_SSID="$(grep "^ssid=${ONLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
-		if [ "$CURRENT_SSID" == "$ONLINE_SSID" ]
-		then
+		if [ "$CURRENT_SSID" == "$ONLINE_SSID" ]; then
 			HUP_NEEDED=false
 			continue
 		fi
 		CURRENT_SSID="$(grep "^ssid=${OFFLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
-		if [ "$CURRENT_SSID" == "$OFFLINE_SSID" ]
-		then
+		if [ "$CURRENT_SSID" == "$OFFLINE_SSID" ]; then
 			logger -s -t "$SCRIPTNAME" -p 5 "TQ is ${GATEWAY_TQ}, SSID is ${CURRENT_SSID}, changing to ${ONLINE_SSID}"
 			sed -i "s/^ssid=${CURRENT_SSID}$/ssid=${ONLINE_SSID}/" $HOSTAPD
 			HUP_NEEDED=true # immediate HUP would be too early for dualband devices, delaying it
@@ -70,19 +67,16 @@ then
 	done
 fi
 
-if [ "$GATEWAY_TQ" -lt "$LOWER_LIMIT" ];
-then
+if [ "$GATEWAY_TQ" -lt "$LOWER_LIMIT" ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is ${GATEWAY_TQ}, node is considered offline"
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical WLAN devices
 		CURRENT_SSID="$(grep "^ssid=${OFFLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
-		if [ "$CURRENT_SSID" == "$OFFLINE_SSID" ]
-		then
+		if [ "$CURRENT_SSID" == "$OFFLINE_SSID" ]; then
 			HUP_NEEDED=false
 			continue
 		fi
 		CURRENT_SSID="$(grep "^ssid=${ONLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
-		if [ "$CURRENT_SSID" == "$ONLINE_SSID" ]
-		then
+		if [ "$CURRENT_SSID" == "$ONLINE_SSID" ]; then
 			logger -s -t "$SCRIPTNAME" -p 5 "TQ is ${GATEWAY_TQ}, SSID is ${CURRENT_SSID}, changing to ${OFFLINE_SSID}"
 			sed -i "s/^ssid=${ONLINE_SSID}$/ssid=${OFFLINE_SSID}/" $HOSTAPD
 			HUP_NEEDED=true # immediate HUP would be too early for dualband devices, delaying it
