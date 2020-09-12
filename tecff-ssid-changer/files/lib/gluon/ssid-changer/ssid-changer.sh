@@ -53,7 +53,6 @@ if [ "$GATEWAY_TQ" -gt "$UPPER_LIMIT" ]; then
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical WLAN devices
 		CURRENT_SSID="$(grep "^ssid=${ONLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
 		if [ "$CURRENT_SSID" == "$ONLINE_SSID" ]; then
-			HUP_NEEDED=false
 			continue
 		fi
 		CURRENT_SSID="$(grep "^ssid=${OFFLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
@@ -72,7 +71,6 @@ if [ "$GATEWAY_TQ" -lt "$LOWER_LIMIT" ]; then
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical WLAN devices
 		CURRENT_SSID="$(grep "^ssid=${OFFLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
 		if [ "$CURRENT_SSID" == "$OFFLINE_SSID" ]; then
-			HUP_NEEDED=false
 			continue
 		fi
 		CURRENT_SSID="$(grep "^ssid=${ONLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
