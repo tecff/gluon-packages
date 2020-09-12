@@ -1,10 +1,11 @@
 #!/bin/sh
 
 SCRIPTNAME="ssid-changer"
+DEBUG=false
 
 # check if node has WLAN
 if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "node has no WLAN, aborting."
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "node has no WLAN, aborting."
 	exit
 fi
 
@@ -49,7 +50,7 @@ GATEWAY_TQ="$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[()]' '{print $2}'| t
 
 if [ "$GATEWAY_TQ" -gt "$UPPER_LIMIT" ];
 then
-	logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is ${GATEWAY_TQ}, node is online"
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is ${GATEWAY_TQ}, node is online"
 	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical WLAN devices
 		CURRENT_SSID="$(grep "^ssid=${ONLINE_SSID}$" $HOSTAPD | cut -d"=" -f2)"
 		if [ "$CURRENT_SSID" == "$ONLINE_SSID" ]
