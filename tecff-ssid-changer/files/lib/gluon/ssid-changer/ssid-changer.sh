@@ -45,7 +45,7 @@ GATEWAY_TQ="$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[()]' '{print $2}'| t
 
 # initialize empty variables
 [ -n "$GATEWAY_TQ" ] || GATEWAY_TQ=0
-[ -n "$HUP_NEEDED" ] || HUP_NEEDED=0
+[ -n "$HUP_NEEDED" ] || HUP_NEEDED=false
 
 if [ "$GATEWAY_TQ" -gt "$UPPER_LIMIT" ];
 then
@@ -54,7 +54,7 @@ then
 		CURRENT_SSID="$(grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
 		if [ "$CURRENT_SSID" == "$ONLINE_SSID" ]
 		then
-			HUP_NEEDED=0
+			HUP_NEEDED=false
 			continue
 		fi
 		CURRENT_SSID="$(grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
@@ -62,7 +62,7 @@ then
 		then
 			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, changing to $ONLINE_SSID"
 			sed -i "s/^ssid=$CURRENT_SSID/ssid=$ONLINE_SSID/" $HOSTAPD
-			HUP_NEEDED=1 # immediate HUP would be too early for dualband devices, delaying it
+			HUP_NEEDED=true # immediate HUP would be too early for dualband devices, delaying it
 		else
 			logger -s -t "$SCRIPTNAME" -p 5 "there's something wrong, didn't find SSID $ONLINE_SSID or $OFFLINE_SSID in $HOSTAPD"
 		fi
@@ -76,7 +76,7 @@ then
 		CURRENT_SSID="$(grep "^ssid=$OFFLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
 		if [ "$CURRENT_SSID" == "$OFFLINE_SSID" ]
 		then
-			HUP_NEEDED=0
+			HUP_NEEDED=false
 			continue
 		fi
 		CURRENT_SSID="$(grep "^ssid=$ONLINE_SSID" $HOSTAPD | cut -d"=" -f2)"
@@ -84,7 +84,7 @@ then
 		then
 			logger -s -t "$SCRIPTNAME" -p 5 "TQ is $GATEWAY_TQ, SSID is $CURRENT_SSID, changing to $OFFLINE_SSID"
 			sed -i "s/^ssid=$ONLINE_SSID/ssid=$OFFLINE_SSID/" $HOSTAPD
-			HUP_NEEDED=1 # immediate HUP would be too early for dualband devices, delaying it
+			HUP_NEEDED=true # immediate HUP would be too early for dualband devices, delaying it
 		else
 			logger -s -t "$SCRIPTNAME" -p 5 "there's something wrong, didn't find SSID $ONLINE_SSID or $OFFLINE_SSID in $HOSTAPD"
 		fi
@@ -94,11 +94,10 @@ fi
 # don't do anything if the TQ is between the two thresholds
 if [ "$GATEWAY_TQ" -ge "$LOWER_LIMIT" -a "$GATEWAY_TQ" -le "$UPPER_LIMIT" ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "TQ $GATEWAY_TQ is between the the lower&upper limits, doing nothing"
-	HUP_NEEDED=0
+	HUP_NEEDED=false
 fi
 
-if [ "$HUP_NEEDED" == "1" ]; then
+if [ "$HUP_NEEDED" = true ]; then
 	killall -HUP hostapd # sending HUP signal to all hostapd processes in order to use the changed SSID
-	HUP_NEEDED=0
 	logger -s -t "$SCRIPTNAME" -p 5 "reloading hostapd with HUP"
 fi
