@@ -8,12 +8,12 @@ local fcntl = require 'posix.fcntl'
 local unistd = require 'posix.unistd'
 
 local configname = 'autoupdater-wifi-fallback'
-local lockfilename = configname .. '-lockfile'
+local lockfilename = '/var/lock/' .. configname .. '.lock'
 local force = false
 local min_uptime_secs = 3600
 local branch_name = uci:get('autoupdater', 'settings', 'branch')
 
-local lockfd, err = fcntl.open(lockfilename, bit.bor(fcntl.O_WRONLY, fcntl.O_CREAT, fcntl.O_CLOEXEC), 384) -- mode 0600
+local lockfd, err = fcntl.open(lockfilename, bit.bor(fcntl.O_WRONLY, fcntl.O_CREAT), 384) -- mode 0600
 if not lockfd then
 	io.stderr:write(err, '\n')
 	os.exit(1)
