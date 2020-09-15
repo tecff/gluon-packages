@@ -18,6 +18,7 @@ uci:section('autoupdater-wifi-fallback', 'autoupdater-wifi-fallback', 'settings'
 uci:delete('wireless', 'fallback')
 uci:delete('network', 'fallback')
 uci:delete('network', 'fallback6')
+uci:delete('firewall', 'fallback')
 
 uci:section('network', 'interface', 'fallback',{
 	proto = 'dhcp',
@@ -31,9 +32,64 @@ uci:section('network', 'interface', 'fallback6',{
 	sourcefilter = false,
 })
 
+uci:section('firewall', 'zone', 'fallback',{
+	name = 'fallback',
+	network = { 'fallback', 'fallback6' },
+	input = 'REJECT',
+	output = 'ACCEPT',
+	forward = 'REJECT',
+	log = '1',
+})
+
+uci:section('firewall', 'rule', 'fallback_ICMPv4_in', {
+	name = 'fallback_ICMPv4_in',
+	src = 'fallback',
+	proto = 'icmp',
+	icmp_type = {
+		'echo-request',
+	},
+	family = 'ipv4',
+	target = 'ACCEPT',
+})
+
+uci:section('firewall', 'rule', 'fallback_ICMPv6_in', {
+	name = 'fallback_ICMPv6_in',
+	src = 'fallback',
+	proto = 'icmp',
+	icmp_type = {
+		'echo-request',
+		'echo-reply',
+		'destination-unreachable',
+		'packet-too-big',
+		'time-exceeded',
+		'bad-header',
+		'unknown-header-type',
+		'router-solicitation',
+		'neighbour-solicitation',
+		'router-advertisement',
+		'neighbour-advertisement',
+		'130/0', -- Multicast Listener Query
+		'131/0', -- Multicast Listener Report
+		'132/0', -- Multicast Listener Done
+		'143/0', -- MLDv2
+	},
+	limit = '1000/sec',
+	family = 'ipv6',
+	target = 'ACCEPT',
+})
+
+uci:section('firewall', 'rule', 'fallback_ssh', {
+	name =  'fallback_ssh',
+	src = 'fallback',
+	dest_port = '22',
+	proto = 'tcp',
+	target = 'ACCEPT',
+})
+
 uci:save('autoupdater-wifi-fallback')
 uci:save('network')
 uci:save('wireless')
+uci:save('firewall')
 
 local minute = tonumber(util.readfile('/usr/lib/micron.d/autoupdater'):match('^([0-9][0-9]?)%s'))
 minute = (minute + 10) % 60
