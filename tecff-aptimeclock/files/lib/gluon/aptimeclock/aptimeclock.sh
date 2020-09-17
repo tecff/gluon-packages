@@ -43,13 +43,16 @@ APCLOCK_OFF="$(uci get $APCLOCK_CONF_OFF)"
 
 CurrentTime="$(date +%k%M)"
 
+WLAN_INTERFACES_OPEN="$(uci show wireless | cut -d"." -f2 | egrep "(client|owe)_radio[0-9]$" | uniq | tr '\n' ' ')"
+
+for wlanif in $WLAN_INTERFACES_OPEN; do
     if ( [ ${#APCLOCK_ON} -eq 4 ] ) && ( [ ${#APCLOCK_OFF} -eq 4 ] ); then
 		# following if clause is separated whether midnight is between the ON/OFF times
       if ( ( ( [ $APCLOCK_ON -le $APCLOCK_OFF ] ) && ( ( [ $CurrentTime -le $APCLOCK_ON ] ) || ( [ $CurrentTime -ge $APCLOCK_OFF ] ) ) ) || \
 			( ( [ $APCLOCK_ON -ge $APCLOCK_OFF ] ) && ( ( [ $CurrentTime -le $APCLOCK_ON ] ) && ( [ $CurrentTime -ge $APCLOCK_OFF ] ) ) ) ); then
-        if [ $(uci get wireless.client_radio0.disabled) -eq 0 ]; then
-          uci set wireless.client_radio0.disabled=1
-          logger -s -t "$SCRIPTNAME" -p 5 "APradio0 deaktiviert"
+        if [ $(uci get wireless.${wlanif}.disabled) -eq 0 ]; then
+          uci set wireless.${wlanif}.disabled=1
+          logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} deactivated"
           /sbin/wifi
           sleep 5 # wait for wifi command to finish
           rm -f $PUBLIC_WLAN_ON_FILE &>/dev/null
@@ -58,8 +61,8 @@ CurrentTime="$(date +%k%M)"
         fi
       else
         if [ -f "$PUBLIC_WLAN_OFF_FILE" ]; then
-          uci set wireless.client_radio0.disabled=0 # wait for wifi command to finish
-          logger -s -t "$SCRIPTNAME" -p 5 "APradio0 aktiviert"
+          uci set wireless.${wlanif}.disabled=0 # wait for wifi command to finish
+          logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} activated"
           /sbin/wifi
           rm -f $PUBLIC_WLAN_OFF_FILE &>/dev/null
           touch $PUBLIC_WLAN_ON_FILE
@@ -68,35 +71,4 @@ CurrentTime="$(date +%k%M)"
     else
       logger -s -t "$SCRIPTNAME" -p 5 "client_clock_on or client_clock_off not set correctly to hhmm format."
     fi
-
-
-dummy=$(uci get wireless.client_radio1.disabled)
-if [ $? -eq 0 ]; then
-  dummy=$(uci get wireless.radio0.client_clock_on)
-  if [ $? -eq 0 ]; then
-    apclock1on=$(uci get wireless.radio0.client_clock_on)
-    apclock1off=$(uci get wireless.radio0.client_clock_off)
-    if ( [ ${#apclock1on} -eq 4 ] ) && ( [ ${#apclock1off} -eq 4 ] ); then
-      if ( ( ( [ $apclock1on -le $apclock1off ] ) && ( ( [ $CurrentTime -le $apclock1on ] ) || ( [ $CurrentTime -ge $apclock1off ] ) ) ) || ( ( [ $apclock1on -ge $apclock1off ] ) && ( ( [ $CurrentTime -le $apclock1on ] ) && ( [ $CurrentTime -ge $apclock1off ] ) ) ) ); then
-        if [ $(uci get wireless.client_radio1.disabled) -eq 0 ]; then
-          uci set wireless.client_radio1.disabled=1
-          logger -s -t "$SCRIPTNAME" -p 5 "APradio1 deaktiviert"
-          /sbin/wifi
-          rm $ClientRadio0on &>/dev/null
-          echo 1> $ClientRadio1off
-        fi
-      else
-        if [ $(uci get wireless.client_radio1.disabled) -eq 1 ]; then
-          uci set wireless.client_radio1.disabled=0
-          logger -s -t "$SCRIPTNAME" -p 5 "APradio1 aktiviert"
-          /sbin/wifi
-          rm $ClientRadio0off &>/dev/null
-          echo 1> $ClientRadio1on
-        fi
-      fi
-    else
-      logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio0.client_clock_on or client_clock_off not set correctly to hhmm format."
-    fi
-  fi
-fi
-
+done
