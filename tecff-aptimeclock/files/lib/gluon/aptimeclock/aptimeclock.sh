@@ -28,8 +28,8 @@ if [ "$?" != "0" ]; then
 	exit
 fi
 
-ClientRadio0off="/tmp/${SCRIPTNAME}-ClientRadio0.off"
-ClientRadio0on="/tmp/${SCRIPTNAME}-ClientRadio0.on"
+PUBLIC_WLAN_ON_FILE="/tmp/${SCRIPTNAME}-public-wlan.on"
+PUBLIC_WLAN_OFF_FILE="/tmp/${SCRIPTNAME}-public-wlan.off"
 APCLOCK_CONF_ON="wireless.radio0.client_clock_on"
 APCLOCK_CONF_OFF="wireless.radio0.client_clock_off"
 
@@ -51,16 +51,16 @@ CurrentTime="$(date +%k%M)"
           uci set wireless.client_radio0.disabled=1
           logger -s -t "$SCRIPTNAME" -p 5 "APradio0 deaktiviert"
           /sbin/wifi
-          rm $ClientRadio0on &>/dev/null
-          echo 1> $ClientRadio0off
+          rm $PUBLIC_WLAN_ON_FILE &>/dev/null
+          echo 1> $PUBLIC_WLAN_OFF_FILE
         fi
       else
         if [ $(uci get wireless.client_radio0.disabled) -eq 1 ]; then
           uci set wireless.client_radio0.disabled=0
           logger -s -t "$SCRIPTNAME" -p 5 "APradio0 aktiviert"
           /sbin/wifi
-          rm $ClientRadio0off &>/dev/null
-          echo 1> $ClientRadio0on
+          rm $PUBLIC_WLAN_OFF_FILE &>/dev/null
+          echo 1> $PUBLIC_WLAN_ON_FILE
         fi
       fi
     else
