@@ -9,7 +9,7 @@ SCRIPTNAME="aptimeclock"
 ClientRadio0off="/tmp/${SCRIPTNAME}-ClientRadio0.off"
 ClientRadio0on="/tmp/${SCRIPTNAME}-ClientRadio0.on"
 
-CurrentTime="$(date +%k%M)"
+CurrentTime="$(date +%H%M)"
 
 dummy=$(uci get wireless.client_radio0.disabled)
 if [ $? -eq 0 ]; then
