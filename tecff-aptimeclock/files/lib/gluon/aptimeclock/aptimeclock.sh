@@ -33,7 +33,7 @@ PUBLIC_WLAN_OFF_FILE="/tmp/${SCRIPTNAME}-public-wlan.off"
 APCLOCK_CONF_ON="wireless.radio0.client_clock_on"
 APCLOCK_CONF_OFF="wireless.radio0.client_clock_off"
 
-if [ ! $(uci get $APCLOCK_CONF_ON) ] || [ ! $(uci get $APCLOCK_CONF_OFF) ]; then
+if [ ! $(uci -q get $APCLOCK_CONF_ON) ] || [ ! $(uci -q get $APCLOCK_CONF_OFF) ]; then
 	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "configuration is incomplete or doesn't exist."
 	exit 0
 fi
