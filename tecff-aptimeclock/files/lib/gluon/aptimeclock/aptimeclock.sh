@@ -7,6 +7,12 @@ sleep 25 # this is a hack
 SCRIPTNAME="aptimeclock"
 DEBUG=false
 
+# check if node has WLAN
+if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "node has no WLAN, aborting."
+	exit
+fi
+
 # don't do anything while an autoupdater process is running
 pgrep -f autoupdater >/dev/null
 if [ "$?" == "0" ]; then
@@ -27,8 +33,6 @@ ClientRadio0on="/tmp/${SCRIPTNAME}-ClientRadio0.on"
 
 CurrentTime="$(date +%k%M)"
 
-dummy=$(uci get wireless.client_radio0.disabled)
-if [ $? -eq 0 ]; then
   dummy=$(uci get wireless.radio0.client_clock_on)
   if [ $? -eq 0 ]; then
     apclock0on=$(uci get wireless.radio0.client_clock_on)
@@ -55,7 +59,6 @@ if [ $? -eq 0 ]; then
       logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio0.client_clock_on or client_clock_off not set correctly to hhmm format."
     fi
   fi
-fi
 
 dummy=$(uci get wireless.client_radio1.disabled)
 if [ $? -eq 0 ]; then
