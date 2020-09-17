@@ -38,12 +38,15 @@ if [ ! $(uci get $APCLOCK_CONF_ON) ] || [ ! $(uci get $APCLOCK_CONF_OFF) ]; then
 	exit 0
 fi
 
+APCLOCK_ON="$(uci get $APCLOCK_CONF_ON)"
+APCLOCK_OFF="$(uci get $APCLOCK_CONF_OFF)"
+
 CurrentTime="$(date +%k%M)"
 
-    apclock0on=$(uci get wireless.radio0.client_clock_on)
-    apclock0off=$(uci get wireless.radio0.client_clock_off)
-    if ( [ ${#apclock0on} -eq 4 ] ) && ( [ ${#apclock0off} -eq 4 ] ); then
-      if ( ( ( [ $apclock0on -le $apclock0off ] ) && ( ( [ $CurrentTime -le $apclock0on ] ) || ( [ $CurrentTime -ge $apclock0off ] ) ) ) || ( ( [ $apclock0on -ge $apclock0off ] ) && ( ( [ $CurrentTime -le $apclock0on ] ) && ( [ $CurrentTime -ge $apclock0off ] ) ) ) ); then
+    if ( [ ${#APCLOCK_ON} -eq 4 ] ) && ( [ ${#APCLOCK_OFF} -eq 4 ] ); then
+		# following if clause is separated whether midnight is between the ON/OFF times
+      if ( ( ( [ $APCLOCK_ON -le $APCLOCK_OFF ] ) && ( ( [ $CurrentTime -le $APCLOCK_ON ] ) || ( [ $CurrentTime -ge $APCLOCK_OFF ] ) ) ) || \
+			( ( [ $APCLOCK_ON -ge $APCLOCK_OFF ] ) && ( ( [ $CurrentTime -le $APCLOCK_ON ] ) && ( [ $CurrentTime -ge $APCLOCK_OFF ] ) ) ) ); then
         if [ $(uci get wireless.client_radio0.disabled) -eq 0 ]; then
           uci set wireless.client_radio0.disabled=1
           logger -s -t "$SCRIPTNAME" -p 5 "APradio0 deaktiviert"
@@ -61,7 +64,7 @@ CurrentTime="$(date +%k%M)"
         fi
       fi
     else
-      logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio0.client_clock_on or client_clock_off not set correctly to hhmm format."
+      logger -s -t "$SCRIPTNAME" -p 5 "client_clock_on or client_clock_off not set correctly to hhmm format."
     fi
 
 
