@@ -57,7 +57,6 @@ for wlanif in $WLAN_INTERFACES_OPEN; do
 			fi
 		else # node's time is currently in active public wlan timeframe
 			if [ -f "$PUBLIC_WLAN_OFF_FILE" ]; then # public wlan has been deactivated before by this script
-				uci set wireless.${wlanif}.disabled=0 # wait for wifi command to finish
 				logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} activated"
 				WLAN_ENABLE_TRIGGER=true
 			fi
