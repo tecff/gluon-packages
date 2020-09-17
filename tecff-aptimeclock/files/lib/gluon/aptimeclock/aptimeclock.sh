@@ -36,7 +36,7 @@ if [ $? -eq 0 ]; then
         fi
       fi
     else
-      logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio0.client_apclock0on or apclock0off not set correctly to hhmm format."
+      logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio0.client_clock_on or client_clock_off not set correctly to hhmm format."
     fi
   fi
 fi
@@ -66,7 +66,7 @@ if [ $? -eq 0 ]; then
         fi
       fi
     else
-      logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio1.client_apclock1on or .apclock1off not set correctly to hhmm format."
+      logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio0.client_clock_on or client_clock_off not set correctly to hhmm format."
     fi
   fi
 fi
