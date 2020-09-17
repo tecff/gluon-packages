@@ -30,11 +30,16 @@ fi
 
 ClientRadio0off="/tmp/${SCRIPTNAME}-ClientRadio0.off"
 ClientRadio0on="/tmp/${SCRIPTNAME}-ClientRadio0.on"
+APCLOCK_CONF_ON="wireless.radio0.client_clock_on"
+APCLOCK_CONF_OFF="wireless.radio0.client_clock_off"
+
+if [ ! $(uci get $APCLOCK_CONF_ON) ] || [ ! $(uci get $APCLOCK_CONF_OFF) ]; then
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "configuration is incomplete or doesn't exist."
+	exit 0
+fi
 
 CurrentTime="$(date +%k%M)"
 
-  dummy=$(uci get wireless.radio0.client_clock_on)
-  if [ $? -eq 0 ]; then
     apclock0on=$(uci get wireless.radio0.client_clock_on)
     apclock0off=$(uci get wireless.radio0.client_clock_off)
     if ( [ ${#apclock0on} -eq 4 ] ) && ( [ ${#apclock0off} -eq 4 ] ); then
@@ -58,7 +63,7 @@ CurrentTime="$(date +%k%M)"
     else
       logger -s -t "$SCRIPTNAME" -p 5 "wireless.radio0.client_clock_on or client_clock_off not set correctly to hhmm format."
     fi
-  fi
+
 
 dummy=$(uci get wireless.client_radio1.disabled)
 if [ $? -eq 0 ]; then
