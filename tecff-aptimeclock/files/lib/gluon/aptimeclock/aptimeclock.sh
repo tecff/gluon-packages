@@ -53,17 +53,17 @@ for wlanif in $WLAN_INTERFACES_OPEN; do
         if [ $(uci get wireless.${wlanif}.disabled) -eq 0 ]; then
           uci set wireless.${wlanif}.disabled=1
           logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} deactivated"
-          /sbin/wifi
+          wifi
           sleep 5 # wait for wifi command to finish
           rm -f $PUBLIC_WLAN_ON_FILE &>/dev/null
           touch $PUBLIC_WLAN_OFF_FILE
           uci revert wireless
         fi
-      else
-        if [ -f "$PUBLIC_WLAN_OFF_FILE" ]; then
+      else # node's time is currently in active public wlan timeframe
+        if [ -f "$PUBLIC_WLAN_OFF_FILE" ]; then # public wlan has been deactivated before by this script
           uci set wireless.${wlanif}.disabled=0 # wait for wifi command to finish
           logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} activated"
-          /sbin/wifi
+          wifi
           rm -f $PUBLIC_WLAN_OFF_FILE &>/dev/null
           touch $PUBLIC_WLAN_ON_FILE
         fi
