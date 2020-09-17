@@ -53,22 +53,30 @@ for wlanif in $WLAN_INTERFACES_OPEN; do
         if [ $(uci get wireless.${wlanif}.disabled) -eq 0 ]; then
           uci set wireless.${wlanif}.disabled=1
           logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} deactivated"
-          wifi
-          sleep 5 # wait for wifi command to finish
-          rm -f $PUBLIC_WLAN_ON_FILE &>/dev/null
-          touch $PUBLIC_WLAN_OFF_FILE
-          uci revert wireless
+          WLAN_DISABLE_TRIGGER=true
         fi
       else # node's time is currently in active public wlan timeframe
         if [ -f "$PUBLIC_WLAN_OFF_FILE" ]; then # public wlan has been deactivated before by this script
           uci set wireless.${wlanif}.disabled=0 # wait for wifi command to finish
           logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} activated"
-          wifi
-          rm -f $PUBLIC_WLAN_OFF_FILE &>/dev/null
-          touch $PUBLIC_WLAN_ON_FILE
+          WLAN_ENABLE_TRIGGER=true
         fi
       fi
     else
       logger -s -t "$SCRIPTNAME" -p 5 "client_clock_on or client_clock_off not set correctly to hhmm format."
     fi
 done
+if [ "$WLAN_DISABLE_TRIGGER" = true ]; then
+	logger -s -t "$SCRIPTNAME" -p 5 "trigger wifi restart to disable the public wlan interfaces"
+	wifi
+	rm -f $PUBLIC_WLAN_ON_FILE &>/dev/null
+	touch $PUBLIC_WLAN_OFF_FILE
+	sleep 5 # wait for wifi command to finish
+	uci revert wireless
+fi
+if [ "$WLAN_ENABLE_TRIGGER" = true ]; then
+	logger -s -t "$SCRIPTNAME" -p 5 "trigger wifi restart to enable the public wlan interfaces"
+	wifi
+	rm -f $PUBLIC_WLAN_OFF_FILE &>/dev/null
+	touch $PUBLIC_WLAN_ON_FILE
+fi
