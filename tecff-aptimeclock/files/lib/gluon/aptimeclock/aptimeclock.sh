@@ -5,6 +5,22 @@
 sleep 25 # this is a hack
 
 SCRIPTNAME="aptimeclock"
+DEBUG=false
+
+# don't do anything while an autoupdater process is running
+pgrep -f autoupdater >/dev/null
+if [ "$?" == "0" ]; then
+	logger -s -t "$SCRIPTNAME" -p 5 "autoupdater is running, aborting."
+	exit
+fi
+
+# don't run this script if another instance is still running
+exec 200<$0
+flock -n 200
+if [ "$?" != "0" ]; then
+	logger -s -t "$SCRIPTNAME" -p 5 "failed to acquire lock, another instance of this script might still be running, aborting."
+	exit
+fi
 
 ClientRadio0off="/tmp/${SCRIPTNAME}-ClientRadio0.off"
 ClientRadio0on="/tmp/${SCRIPTNAME}-ClientRadio0.on"
