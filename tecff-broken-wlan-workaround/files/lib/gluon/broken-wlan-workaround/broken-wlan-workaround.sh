@@ -43,7 +43,7 @@ for i in $(ls /sys/class/net/); do
 		WLAN_INTERFACES="$i"
 	fi
 	# gather a list of devices
-	if expr "$i" : "\(client\|ibss\|mesh\)[0-9]" >/dev/null; then
+	if expr "$i" : "\(client\|mesh\|owe\)[0-9]" >/dev/null; then
 		WIRELESS_UCI="$(uci show wireless | grep $i | cut -d"." -f1-2)"
 		WLAN_DEVICE="$(uci get ${WIRELESS_UCI}.device)"
 		if [ -n "$WLAN_DEVICES" ]; then
@@ -74,7 +74,7 @@ RESTARTINFOFILE="/tmp/wlan-last-restart-marker-file"
 # check if there are connections to other nodes via wireless meshing
 WLANMESHCONNECTIONS=0
 for wlan_interface in $WLAN_INTERFACES; do
-	if expr "$wlan_interface" : "\(ibss\|mesh\)[0-9]" >/dev/null; then
+	if expr "$wlan_interface" : "mesh[0-9]" >/dev/null; then
 		if [ "$(batctl o | egrep "$wlan_interface" | wc -l)" -gt 0 ]; then
 			WLANMESHCONNECTIONS=1
 			$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found wlan mesh partners."
