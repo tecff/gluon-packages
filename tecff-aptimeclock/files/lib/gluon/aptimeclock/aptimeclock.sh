@@ -41,7 +41,7 @@ fi
 APCLOCK_ON="$(uci get $APCLOCK_CONF_ON)"
 APCLOCK_OFF="$(uci get $APCLOCK_CONF_OFF)"
 
-CurrentTime="$(date +%k%M)"
+CurrentTime="$(date +%H%M)"
 
 WLAN_INTERFACES_OPEN="$(uci show wireless | cut -d"." -f2 | egrep "(client|owe)_radio[0-9]$" | uniq | tr '\n' ' ')"
 
