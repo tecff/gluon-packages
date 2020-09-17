@@ -43,10 +43,10 @@ fi
 
 dummy=$(uci get wireless.client_radio1.disabled)
 if [ $? -eq 0 ]; then
-  dummy=$(uci get wireless.radio1.client_clock_on)
+  dummy=$(uci get wireless.radio0.client_clock_on)
   if [ $? -eq 0 ]; then
-    apclock1on=$(uci get wireless.radio1.client_clock_on)
-    apclock1off=$(uci get wireless.radio1.client_clock_off)
+    apclock1on=$(uci get wireless.radio0.client_clock_on)
+    apclock1off=$(uci get wireless.radio0.client_clock_off)
     if ( [ ${#apclock1on} -eq 4 ] ) && ( [ ${#apclock1off} -eq 4 ] ); then
       if ( ( ( [ $apclock1on -le $apclock1off ] ) && ( ( [ $CurrentTime -le $apclock1on ] ) || ( [ $CurrentTime -ge $apclock1off ] ) ) ) || ( ( [ $apclock1on -ge $apclock1off ] ) && ( ( [ $CurrentTime -le $apclock1on ] ) && ( [ $CurrentTime -ge $apclock1off ] ) ) ) ); then
         if [ $(uci get wireless.client_radio1.disabled) -eq 0 ]; then
