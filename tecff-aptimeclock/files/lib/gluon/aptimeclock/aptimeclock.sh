@@ -46,25 +46,25 @@ CurrentTime="$(date +%H%M)"
 WLAN_INTERFACES_OPEN="$(uci show wireless | cut -d"." -f2 | egrep "(client|owe)_radio[0-9]$" | uniq | tr '\n' ' ')"
 
 for wlanif in $WLAN_INTERFACES_OPEN; do
-    if ( [ ${#APCLOCK_ON} -eq 4 ] ) && ( [ ${#APCLOCK_OFF} -eq 4 ] ); then
+	if ( [ ${#APCLOCK_ON} -eq 4 ] ) && ( [ ${#APCLOCK_OFF} -eq 4 ] ); then
 		# following if clause is separated whether midnight is between the ON/OFF times
-      if ( ( ( [ $APCLOCK_ON -le $APCLOCK_OFF ] ) && ( ( [ $CurrentTime -le $APCLOCK_ON ] ) || ( [ $CurrentTime -ge $APCLOCK_OFF ] ) ) ) || \
+		if ( ( ( [ $APCLOCK_ON -le $APCLOCK_OFF ] ) && ( ( [ $CurrentTime -le $APCLOCK_ON ] ) || ( [ $CurrentTime -ge $APCLOCK_OFF ] ) ) ) || \
 			( ( [ $APCLOCK_ON -ge $APCLOCK_OFF ] ) && ( ( [ $CurrentTime -le $APCLOCK_ON ] ) && ( [ $CurrentTime -ge $APCLOCK_OFF ] ) ) ) ); then
-        if [ $(uci get wireless.${wlanif}.disabled) -eq 0 ]; then
-          uci set wireless.${wlanif}.disabled=1
-          logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} deactivated"
-          WLAN_DISABLE_TRIGGER=true
-        fi
-      else # node's time is currently in active public wlan timeframe
-        if [ -f "$PUBLIC_WLAN_OFF_FILE" ]; then # public wlan has been deactivated before by this script
-          uci set wireless.${wlanif}.disabled=0 # wait for wifi command to finish
-          logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} activated"
-          WLAN_ENABLE_TRIGGER=true
-        fi
-      fi
-    else
-      logger -s -t "$SCRIPTNAME" -p 5 "client_clock_on or client_clock_off not set correctly to hhmm format."
-    fi
+			if [ $(uci get wireless.${wlanif}.disabled) -eq 0 ]; then
+				uci set wireless.${wlanif}.disabled=1
+				logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} deactivated"
+				WLAN_DISABLE_TRIGGER=true
+			fi
+		else # node's time is currently in active public wlan timeframe
+			if [ -f "$PUBLIC_WLAN_OFF_FILE" ]; then # public wlan has been deactivated before by this script
+				uci set wireless.${wlanif}.disabled=0 # wait for wifi command to finish
+				logger -s -t "$SCRIPTNAME" -p 5 "${wlanif} activated"
+				WLAN_ENABLE_TRIGGER=true
+			fi
+		fi
+	else
+		logger -s -t "$SCRIPTNAME" -p 5 "client_clock_on or client_clock_off not set correctly to hhmm format."
+	fi
 done
 if [ "$WLAN_DISABLE_TRIGGER" = true ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "trigger wifi restart to disable the public wlan interfaces"
