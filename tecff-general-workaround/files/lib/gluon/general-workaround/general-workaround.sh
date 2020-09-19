@@ -4,6 +4,7 @@
 #
 
 SCRIPTNAME="general-workaround"
+DEBUG=false
 
 # don't do anything while an autoupdater process is running
 checkupdater() {
@@ -20,11 +21,11 @@ REBOOTFILE="/tmp/device-reboot-pending"
 
 # check if the node can reach an NTP server
 IPV6CONNECTION=0
-logger -s -t "$SCRIPTNAME" -p 5 "trying ping6 on NTP servers..."
+$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "trying ping6 on NTP servers..."
 for i in $(uci get system.ntp.server); do
 	ping6 -c 1 $i >/dev/null 2>&1
 	if [ $? -eq 0 ]; then
-		logger -s -t "$SCRIPTNAME" -p 5 "can ping at least one of the NTP servers: $i"
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can ping at least one of the NTP servers: $i"
 		IPV6CONNECTION=1
 		if [ ! -f "$GWFILE" ]; then
 			# create file so we can check later if there was a reachable gateway before
@@ -39,7 +40,7 @@ fi
 
 # check if the node suffers from a unregister_netdevice bug
 UNREGISTERBUG=0
-logger -s -t "$SCRIPTNAME" -p 5 "checking for unregister_netdevice bug..."
+$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "checking for unregister_netdevice bug..."
 dmesg | tail | grep -q "unregister_netdevice: waiting for"
 if [ "$?" == 0 ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "seeing log messages which indicate a serious bug."
@@ -71,7 +72,7 @@ elif [ "$ACTIONREQUIRED" -eq 1 ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "rebooting device, network restart didn't help."
 	reboot
 else
-	logger -s -t "$SCRIPTNAME" -p 5 "everything seems to be ok."
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "everything seems to be ok."
 	rm -f $REBOOTFILE
 	rm -f $NWRESTARTFILE
 fi
