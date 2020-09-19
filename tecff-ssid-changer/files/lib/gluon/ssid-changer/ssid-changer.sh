@@ -10,7 +10,7 @@ if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
 fi
 
 # don't do anything while an autoupdater process is running
-pgrep -f autoupdater >/dev/null
+pgrep autoupdater >/dev/null
 if [ "$?" == "0" ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "autoupdater is running, aborting."
 	exit
