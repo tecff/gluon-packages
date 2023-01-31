@@ -12,7 +12,7 @@ define Package/tecff-ssid-changer
   SECTION:=gluon
   CATEGORY:=Gluon
   TITLE:=SSID Changer
-  DEPENDS:=+gluon-core +micrond
+  DEPENDS:=+gluon-core +gluon-state-check +micrond
 endef
 
 define Build/Prepare

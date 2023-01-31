@@ -57,11 +57,12 @@ if [ "$OWE" = true ]; then
 fi
 
 # check for an active gateway and get its connection quality (TQ)
-GATEWAY_TQ="$(batctl gwl | grep -e "^=>" -e "^\*" | awk -F'[()]' '{print $2}'| tr -d " ")"
+GATEWAY_TQ=0
+if [ -f /var/gluon/state/has_default_gw4 ]; then
+	GATEWAY_TQ="$(batctl gwl -H | grep -e "^\*" | awk -F'[()]' '{print $2}' | tr -d " ")"
+fi
 
-# initialize empty variables
-[ -n "$GATEWAY_TQ" ] || GATEWAY_TQ=0
-[ -n "$HUP_NEEDED" ] || HUP_NEEDED=false
+HUP_NEEDED=false
 
 if [ "$GATEWAY_TQ" -gt "$UPPER_LIMIT" ]; then
 	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is ${GATEWAY_TQ}, node is online"
