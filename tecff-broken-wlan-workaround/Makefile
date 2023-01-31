@@ -12,7 +12,7 @@ define Package/tecff-broken-wlan-workaround
   SECTION:=tecff
   CATEGORY:=Customization
   TITLE:=broken wlan workaround
-  DEPENDS:=+gluon-core +micrond
+  DEPENDS:=+gluon-core +gluon-state-check +micrond +tecff-general-workaround
 endef
 
 define Build/Prepare
