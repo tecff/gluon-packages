@@ -9,6 +9,6 @@ if on < off - vpnlimit throttle during daytimes<br>
 if off < on - vpnlimit throttle during nighttimes<br>
 <br>
 example:<br>
-uci set mesh_vpn.bandwidth_limit.clock_on=0810<br>
-uci set mesh_vpn.bandwidth_limit.clock_off=1915<br>
+uci set gluon.mesh_vpn.limit_clock_on=0810<br>
+uci set gluon.mesh_vpn.limit_clock_off=1915<br>
 <br>
