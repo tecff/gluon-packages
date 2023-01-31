@@ -1,0 +1,8 @@
+#!/bin/sh
+for i in $(uci get system.ntp.server); do
+	ping6 -c 1 $i >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		exit 0
+	fi
+done
+exit 1

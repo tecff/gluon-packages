@@ -21,19 +21,15 @@ REBOOTFILE="/tmp/device-reboot-pending"
 
 # check if the node can reach an NTP server
 IPV6CONNECTION=0
-$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "trying ping6 on NTP servers..."
-for i in $(uci get system.ntp.server); do
-	ping6 -c 1 $i >/dev/null 2>&1
-	if [ $? -eq 0 ]; then
-		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can ping at least one of the NTP servers: $i"
-		IPV6CONNECTION=1
-		if [ ! -f "$GWFILE" ]; then
-			# create file so we can check later if there was a reachable gateway before
-			touch $GWFILE
-		fi
-		break
+$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "checking reachability of NTP servers..."
+if [ -f /var/gluon/state/can_reach_ntp ]; then
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can ping at least one of the NTP servers: $i"
+	IPV6CONNECTION=1
+	if [ ! -f "$GWFILE" ]; then
+		# create file so we can check later if there was a reachable gateway before
+		touch $GWFILE
 	fi
-done
+fi
 if [ "$IPV6CONNECTION" -eq 0 ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "can't ping any of the NTP servers."
 fi

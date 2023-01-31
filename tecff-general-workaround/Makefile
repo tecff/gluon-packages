@@ -12,7 +12,7 @@ define Package/tecff-general-workaround
   SECTION:=tecff
   CATEGORY:=Customization
   TITLE:=general workaround
-  DEPENDS:=+gluon-core +micrond
+  DEPENDS:=+gluon-core +gluon-state-check +micrond
 endef
 
 define Build/Prepare
