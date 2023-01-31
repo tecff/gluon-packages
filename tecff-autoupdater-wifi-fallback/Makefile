@@ -12,7 +12,7 @@ define Package/tecff-autoupdater-wifi-fallback
   SECTION:=tecff
   CATEGORY:=Customization
   TITLE:=Implements switching to fallback mode if we are cut off from the mesh
-  DEPENDS:=+gluon-autoupdater +gluon-site +iw +libgluonutil +libiwinfo-lua +luabitop +luaposix +micrond
+  DEPENDS:=+gluon-autoupdater +gluon-site +gluon-state-check +iw +libgluonutil +libiwinfo-lua +luabitop +luaposix +micrond
 endef
 
 define Build/Prepare

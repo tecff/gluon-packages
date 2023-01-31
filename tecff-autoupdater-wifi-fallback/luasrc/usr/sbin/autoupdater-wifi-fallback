@@ -70,17 +70,10 @@ local function preflight_check()
 end
 
 local function connectivity_check()
-	local f = io.open('/sys/kernel/debug/batman_adv/bat0/gateways', 'r')
+	local f = io.open('/var/gluon/state/has_default_gw4', 'r')
 	if f then
-		for line in f:lines() do
-			local gateway_mac = line:match('^=?>? +([0-9a-f:]+)')
-			if gateway_mac then
-				if os.execute('batctl ping -t5 -c1 ' .. gateway_mac .. ' > /dev/null 2>&1') == 0 then
-					return true
-				end
-			end
-		end
 		f:close()
+		return true
 	end
 
 	-- connectivity check against updateserver
