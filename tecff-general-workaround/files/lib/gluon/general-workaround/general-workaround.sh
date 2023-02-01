@@ -23,7 +23,7 @@ REBOOTFILE="/tmp/device-reboot-pending"
 IPV6CONNECTION=0
 $($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "checking reachability of NTP servers..."
 if [ -f /var/gluon/state/can_reach_ntp ]; then
-	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can ping at least one of the NTP servers: $i"
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can ping at least one of the NTP servers."
 	IPV6CONNECTION=1
 	if [ ! -f "$GWFILE" ]; then
 		# create file so we can check later if there was a reachable gateway before
@@ -31,7 +31,7 @@ if [ -f /var/gluon/state/can_reach_ntp ]; then
 	fi
 fi
 if [ "$IPV6CONNECTION" -eq 0 ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "can't ping any of the NTP servers."
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can't ping any of the NTP servers."
 fi
 
 # check if the node suffers from a unregister_netdevice bug
@@ -46,10 +46,13 @@ fi
 # determine if the script has to act
 ACTIONREQUIRED=0
 if [ "$IPV6CONNECTION" -eq 0 ] || [ "$UNREGISTERBUG" -eq 1 ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "detected a reason to act upon."
 	if [ -f "$GWFILE" ]; then
 		# no pingable gateway but there was one before
 		ACTIONREQUIRED=1
+		logger -s -t "$SCRIPTNAME" -p 5 "detected a reason to act upon."
+	else
+		# no pingable gateway but there also was none before
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "detected a reason to act upon, but as this node had no gateway since its last reboot, doing nothing."
 	fi
 fi
 
