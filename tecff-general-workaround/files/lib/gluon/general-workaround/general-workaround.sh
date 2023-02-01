@@ -35,7 +35,7 @@ for i in $(uci get system.ntp.server); do
 	fi
 done
 if [ "$IPV6CONNECTION" -eq 0 ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "can't ping any of the NTP servers."
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "can't ping any of the NTP servers."
 fi
 
 # check if the node suffers from a unregister_netdevice bug
@@ -50,10 +50,13 @@ fi
 # determine if the script has to act
 ACTIONREQUIRED=0
 if [ "$IPV6CONNECTION" -eq 0 ] || [ "$UNREGISTERBUG" -eq 1 ]; then
-	logger -s -t "$SCRIPTNAME" -p 5 "detected a reason to act upon."
 	if [ -f "$GWFILE" ]; then
 		# no pingable gateway but there was one before
 		ACTIONREQUIRED=1
+		logger -s -t "$SCRIPTNAME" -p 5 "detected a reason to act upon."
+	else
+		# no pingable gateway but there also was none before
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "detected a reason to act upon, but as this node had no gateway since its last reboot, doing nothing."
 	fi
 fi
 
