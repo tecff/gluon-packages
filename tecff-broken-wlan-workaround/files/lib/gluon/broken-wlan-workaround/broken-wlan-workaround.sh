@@ -119,16 +119,13 @@ done
 
 # check if the node can reach the default gateway
 GWCONNECTION=0
-if [ -f /var/gluon/state/has_default_gw4 ]; then
-	if [ -f /var/gluon/state/can_reach_ntp ]; then
-		GWCONNECTION=1
-		if [ ! -f "$GWFILE" ]; then
-			# create file so we can check later if there was a reachable gateway before
-			touch $GWFILE
-		fi
+if [ -f /var/gluon/state/has_default_gw4 ] && [ -f /var/gluon/state/can_reach_ntp ]; then
+	GWCONNECTION=1
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found a batman gateway and can ping at least one of the NTP servers."
+	if [ ! -f "$GWFILE" ]; then
+		# create file so we can check later if there was a reachable gateway before
+		touch $GWFILE
 	fi
-else
-	echo "no default gateway found."
 fi
 
 WLANRESTART=0
@@ -136,12 +133,18 @@ if [ "$WLANMESHCONNECTIONS" -eq 0 ] && [ "$WLANPRIVCONNECTIONS" -eq 0 ] && [ "$W
 	if [ -f "$MESHFILE" ] || [ -f "$CLIENTFILE" ] || [ -f "$PRIVCLIENTFILE" ]; then
 		# no wlan connections but there was one before
 		WLANRESTART=1
+		logger -s -t "$SCRIPTNAME" -p 5 "found no wlan connection, but there was one before."
+	else
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found no wlan connection, but that is no reason to act, because this node had no wlan connections since its last reboot."
 	fi
 fi
 if [ "$GWCONNECTION" -eq 0 ]; then
 	if [ -f "$GWFILE" ]; then
 		# no pingable gateway but there was one before
 		WLANRESTART=1
+		logger -s -t "$SCRIPTNAME" -p 5 "found no working gateway connection, but there was one before."
+	else
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found no working gateway connection, but that is no reason to act, because this node had no gateway since its last reboot."
 	fi
 fi
 
