@@ -151,12 +151,18 @@ if [ "$WLANMESHCONNECTIONS" -eq 0 ] && [ "$WLANPRIVCONNECTIONS" -eq 0 ] && [ "$W
 	if [ -f "$MESHFILE" ] || [ -f "$CLIENTFILE" ] || [ -f "$PRIVCLIENTFILE" ]; then
 		# no wlan connections but there was one before
 		WLANRESTART=1
+		logger -s -t "$SCRIPTNAME" -p 5 "found no wlan connection, but there was one before."
+	else
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found no wlan connection, but that is no reason to act, because this node had no wlan connections since its last reboot."
 	fi
 fi
 if [ "$GWCONNECTION" -eq 0 ]; then
 	if [ -f "$GWFILE" ]; then
 		# no pingable gateway but there was one before
 		WLANRESTART=1
+		logger -s -t "$SCRIPTNAME" -p 5 "found no working gateway connection, but there was one before."
+	else
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "found no working gateway connection, but that is no reason to act, because this node had no gateway since its last reboot."
 	fi
 fi
 
