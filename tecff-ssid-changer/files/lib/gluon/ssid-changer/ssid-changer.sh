@@ -9,6 +9,13 @@ if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
 	exit
 fi
 
+# don't do anything if there isn't any hostapd config
+find /var/run/hostapd-* >/dev/null 2>&1
+if [ "$?" != "0" ]; then
+	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "no hostapd config found."
+	exit
+fi
+
 # don't do anything while an autoupdater process is running
 pgrep autoupdater >/dev/null
 if [ "$?" == "0" ]; then
@@ -66,7 +73,8 @@ HUP_NEEDED=false
 
 if [ "$GATEWAY_TQ" -gt "$UPPER_LIMIT" ]; then
 	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is ${GATEWAY_TQ}, node is online"
-	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical WLAN devices
+	for HOSTAPD in /var/run/hostapd-*; do # check status of all physical WLAN devices
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "checking status of ${HOSTAPD} ..."
 		CURRENT_SSID_OPEN="$(grep "^ssid=${ONLINE_SSID_OPEN}$" $HOSTAPD | cut -d"=" -f2)"
 		if [ "$CURRENT_SSID_OPEN" != "$ONLINE_SSID_OPEN" ]; then
 			CURRENT_SSID_OPEN="$(grep "^ssid=${OFFLINE_SSID_OPEN}$" $HOSTAPD | cut -d"=" -f2)"
@@ -96,7 +104,8 @@ fi
 
 if [ "$GATEWAY_TQ" -lt "$LOWER_LIMIT" ]; then
 	logger -s -t "$SCRIPTNAME" -p 5 "gateway TQ is ${GATEWAY_TQ}, node is considered offline"
-	for HOSTAPD in $(ls /var/run/hostapd-phy*); do # check status of all physical WLAN devices
+	for HOSTAPD in /var/run/hostapd-*; do # check status of all physical WLAN devices
+		$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "checking status of ${HOSTAPD} ..."
 		CURRENT_SSID_OPEN="$(grep "^ssid=${OFFLINE_SSID_OPEN}$" $HOSTAPD | cut -d"=" -f2)"
 		if [ "$CURRENT_SSID_OPEN" != "$OFFLINE_SSID_OPEN" ]; then
 			CURRENT_SSID_OPEN="$(grep "^ssid=${ONLINE_SSID_OPEN}$" $HOSTAPD | cut -d"=" -f2)"
