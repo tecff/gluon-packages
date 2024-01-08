@@ -4,7 +4,7 @@ SCRIPTNAME="ssid-changer"
 DEBUG=false
 
 # check if node has WLAN
-if [ "$(ls -l /sys/class/ieee80211/phy* | wc -l)" -eq 0 ]; then
+if [ ! -d /sys/class/ieee80211 ] || [ "$(ls -l /sys/class/ieee80211/ | wc -l)" -eq 0 ]; then
 	$($DEBUG) && logger -s -t "$SCRIPTNAME" -p 5 "node has no WLAN, aborting."
 	exit
 fi

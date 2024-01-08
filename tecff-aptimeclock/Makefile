@@ -1,7 +1,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tecff-aptimeclock
-PKG_VERSION:=2
+PKG_VERSION:=3
+PKG_RELEASE:=0
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 
