@@ -67,9 +67,9 @@ fi
 GATEWAY_TQ=0
 if [ -f /var/gluon/state/has_default_gw4 ]; then
 	GATEWAY_TQ="$(batctl gwl -H 2>/dev/null | grep -e "^\*" | awk -F'[()]' '{print $2}' | tr -d " ")"
-	# Fallback if default gateway exists but no batman gateway is selected (e.g., node is online via WAN/VPN)
+	# Fallback if default gateway exists but no batman gateway is selected (node is offline for clients)
 	if [ -z "$GATEWAY_TQ" ]; then
-		GATEWAY_TQ=255
+		GATEWAY_TQ=0
 	fi
 fi
 
