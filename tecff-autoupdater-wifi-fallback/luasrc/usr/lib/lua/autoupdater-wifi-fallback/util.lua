@@ -27,14 +27,15 @@ function M.get_available_wifi_networks()
 
 	for radio, _ in pairs(radios) do
 		local wifitype = iwinfo.type(radio)
-		local iw = iwinfo[wifitype]
-		if not iw then
-			return null
-		end
-		local tmplist = iw.scanlist(radio)
-		for _, net in ipairs(tmplist) do
-			if net.ssid and net.bssid and net.ssid:match('.*[Ff][Rr][Ee][Ii][Ff][Uu][Nn][Kk].*') then
-				table.insert (radios[radio], net)
+		local iw = wifitype and iwinfo[wifitype]
+		if iw then
+			local tmplist = iw.scanlist(radio)
+			if tmplist then
+				for _, net in ipairs(tmplist) do
+					if net.ssid and net.bssid and net.ssid:match('.*[Ff][Rr][Ee][Ii][Ff][Uu][Nn][Kk].*') then
+						table.insert (radios[radio], net)
+					end
+				end
 			end
 		end
 	end

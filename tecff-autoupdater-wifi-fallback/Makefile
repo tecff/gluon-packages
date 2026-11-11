@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tecff-autoupdater-wifi-fallback
-PKG_VERSION:=6
+PKG_VERSION:=8
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 PKG_BUILD_DEPENDS := respondd
@@ -29,8 +29,8 @@ define Package/tecff-autoupdater-wifi-fallback/install
 	$(CP) ./files/* $(1)/
 	$(CP) $(PKG_BUILD_DIR)/luadest/* $(1)/
 
-	$(INSTALL_DIR) $(1)/lib/gluon/respondd
-	$(CP) $(PKG_BUILD_DIR)/respondd.so $(1)/lib/gluon/respondd/autoupdater-wifi-fallback.so
+	$(INSTALL_DIR) $(1)/usr/lib/respondd
+	$(CP) $(PKG_BUILD_DIR)/respondd.so $(1)/usr/lib/respondd/autoupdater-wifi-fallback.so
 endef
 
 $(eval $(call BuildPackage,tecff-autoupdater-wifi-fallback))
