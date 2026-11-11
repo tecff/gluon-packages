@@ -91,7 +91,7 @@ end
 
 local function run_autoupdater()
 	autil.log('out', 'executing the autoupdater...')
-	os.execute('/usr/sbin/autoupdater -f -b ' .. branch_name)
+	return os.execute('/usr/sbin/autoupdater -f -b ' .. branch_name)
 end
 
 local function switch_to_fallback_mode(radio, ssid, bssid)
